@@ -1,0 +1,108 @@
+=== Pre-Orders for WooCommerce ===
+
+= 1.2.0 (June 13, 2026) =
+* Security: Hardened customer delivery preference AJAX requests by validating nonce, action type, order ownership, order key, and duplicate submissions.
+* Fix: Validated checkout delivery preference nonce before saving customer choices.
+* Fix: Corrected cart and checkout preorder date display to read the saved `_pre_order_available_date` value.
+* Fix: Stored preorder order item meta from checkout line items for classic and block checkout compatibility.
+* Fix: Matched variation IDs during preorder auto-update so variation preorder notifications and order notes work correctly.
+* Fix: Moved deactivation cron cleanup to the main plugin file.
+* Improve: Added defensive WooCommerce dependency checks before loading plugin components.
+* Improve: Preserved existing WooCommerce product setting sections when adding preorder settings.
+
+= 1.1.9 (May 9, 2026) =
+* Improve: Optimized and cleaned functionality.
+* Improve: WooCommerce version 10.7 compatibility.
+
+= 1.1.8 (Mar 1, 2025) =
+* Fix: Prevent fatal error in custom order-status emails by making the `woocommerce_email_before_order_table` callback accept missing `$email` argument.
+* Improve: WooCommerce version 10.5 compatibility.
+
+= 1.1.7 (Nov 16, 2025) =
+* Update: Appears pre-order item meta in both blocks cart and checkout.
+* Improve: WooCommerce version 10.3 compatibility.
+
+= 1.1.6 (Oct 21, 2025) =
+* Improve: Optimized the code.
+* Improve: WooCommerce version 10.2 compatibility.
+
+= 1.1.5 (Oct 4, 2025) =
+* Fix: Shipping requestment message appears incorrectly.
+* Fix: Resolved undefined property of the customer action
+
+= 1.1.4 (Sep 18, 2025) =
+* Fix: Corrected the available date field toggle.
+* Improve: WooCommerce version 10.1 compatibility.
+
+= 1.1.3 (Jun 19, 2025) =
+* Update: Upgraded the integration with WooCommerce Advanced Order Actions plugin.
+* Update: Removed the unneccessary pre-order item list in the new order email.
+* Fix: Extra notice display for non pre-order.
+* Fix: The order arrival email notification did not work.
+* Improve: Customize the customer action panel appearance.
+* Improve: Reorganized the content of email notification to the customers.
+
+= 1.1.2 (May 31, 2025) =
+* New: Added customer actions into the checkout page, allow the customer to choose the shipping type before checking out.
+* New: Added custom pre-order button text option.
+* Fix: Customer actions did not work correctly with HPOS.
+* Fix: Pre-order button text of variation could not be translated.
+* Improve: Display the customer's choice notice on the thank you page.
+
+= 1.1.1 (Mar 9, 2025) =
+* Fix: Integration - Automate splitting order by customer request.
+* Improve: WooCommerce compatibility.
+
+= 1.1.0 (Feb 26, 2025) =
+* Fix: Stock status column displaying on the products page.
+* Fix: Incorrect product availability email timer. 
+* Improve: WooCommerce compatibility.
+
+= 1.0.9 (Jan 12, 2025) =
+* Fix: Cannot modify header information.
+* Fix: Our other plugin compatibility.
+
+= 1.0.8 (Jan 6, 2025) =
+* Improve: Some small improvement.
+* Update: Language file.
+
+= 1.0.7 (Dec 27, 2024) =
+* New: Added customer actions allowing the customers to select the shipping type for their orders.
+* New: Advanced Order Actions plugin integration to automatically split pre-orders after the customer action.
+* Fix: Display correct number of days of preorder product availability in email to admin.
+
+= 1.0.6 (Dec 18, 2024) =
+* New: Added pre-order status settings to the product settings tab.
+* New: Email notification to admin before X days of the preorder product available date.
+* Fix: The notice cannot be dismissed.
+* Improve: Display product name instead of product ID in the note.
+* Improve: The notices will only display for administrators.
+* Improve: Add missing CSS.
+
+= 1.0.5 (Dec 6, 2024) =
+* New: Automate email notification sent to customers when their pre-order becomes available.
+* Improve: Added pre-order email notifications for `on-hold` status.
+
+= 1.0.4 (Nov 26, 2024) =
+* Fix: Schedule is not created at first time set product as `onpreorder`.
+* Improve: The schedule will be updated after the available date is changed.
+
+= 1.0.3 (Nov 13, 2024) =
+* New: Pre-order (only preorder items) email to the customer.
+* New: Mixed pre-order (mixed preorder items) email to the customer.
+* Improve: Changed the `Pre-order` icons color.
+* Improve: Corrected `Pre-order` item meta at order table.
+
+= 1.0.2 (Oct 29, 2024) =
+* New: Added the available date and time in products list.
+* New: Added the `Pre-order` info at order table in order email notifications.
+* New: Added icons for the orders with the only or mixed product stock statuses.
+
+= 1.0.1 (Oct 23, 2024) =
+* New: Added time in the available date fields.
+* Improve: Changed the cron functions to automatically update product stock status.
+* Improve: Minor css updated.
+* Fix: Variation available date cannot be saved.
+
+= 1.0.0 (Oct 21, 2024) =
+* First released.

@@ -1,0 +1,13 @@
+.pre-order-availability-date-small {
+	font-size: 90% !important;
+}
+.stock-status-customer-actions, .stock-status-customer-notice {
+	display: inline-block;
+	margin-bottom: 40px;
+	width: 100%;
+    padding: 20px 30px;
+    border: dashed 1px;
+}
+.stock-status-customer-notice p {
+	margin-bottom: 0 !important;
+}

@@ -1,0 +1,527 @@
+# Copyright (C) 2026 YoOhw.com
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Pre-Orders for WooCommerce 1.2.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/pre-orders-wc\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-06-13T06:45:28+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.9.0\n"
+"X-Domain: pre-orders-wc\n"
+
+#. Plugin Name of the plugin
+msgid "Pre-Orders for WooCommerce"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://wordpress.org/plugins/pre-orders-wc/"
+msgstr ""
+
+#. Description of the plugin
+msgid "Add pre-order stock status, availability dates, and customer delivery preferences to WooCommerce products."
+msgstr ""
+
+#. Author of the plugin
+msgid "YoOhw.com"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://yoohw.com"
+msgstr ""
+
+#: inc/backend/actions/auto-update-to-instock.php:134
+msgid "Unknown product"
+msgstr ""
+
+#. translators: %s: product name.
+#: inc/backend/actions/auto-update-to-instock.php:138
+msgid "Pre-order item \"%s\" is now in stock, and the customer has been notified."
+msgstr ""
+
+#: inc/backend/edit-order.php:19
+msgid "Pre-order"
+msgstr ""
+
+#. translators: %s: the available date of the pre-order product.
+#: inc/backend/edit-order.php:23
+#: inc/frontend/cart.php:71
+msgid "Available on %s"
+msgstr ""
+
+#: inc/backend/product-stock-status.php:35
+#: inc/backend/settings.php:54
+#: inc/frontend/cart.php:77
+msgid "On preorder"
+msgstr ""
+
+#: inc/backend/product-stock-status.php:74
+#: inc/backend/product-stock-status.php:118
+msgid "Available date"
+msgstr ""
+
+#: inc/backend/product-stock-status.php:79
+msgid "The date and time when the product will be available for Pre-order."
+msgstr ""
+
+#: inc/backend/product-stock-status.php:123
+msgid "The date and time when this variation will be available for Pre-order."
+msgstr ""
+
+#: inc/backend/products.php:26
+msgid "Stock"
+msgstr ""
+
+#: inc/backend/settings.php:21
+#: inc/backend/settings.php:26
+msgid "Stock status"
+msgstr ""
+
+#: inc/backend/settings.php:44
+msgid "Order Splitter"
+msgstr ""
+
+#: inc/backend/settings.php:59
+msgid "Button text"
+msgstr ""
+
+#: inc/backend/settings.php:61
+msgid "Replace the default 'Add to Cart' button for the pre-order product."
+msgstr ""
+
+#: inc/backend/settings.php:63
+#: inc/frontend/product-list.php:25
+#: inc/frontend/single-product.php:67
+msgid "Pre-order now"
+msgstr ""
+
+#: inc/backend/settings.php:66
+msgid "Availability notify"
+msgstr ""
+
+#: inc/backend/settings.php:68
+msgid "Enable pre-order product availability emails to the administrator"
+msgstr ""
+
+#: inc/backend/settings.php:69
+msgid "If checked, the site administrator will receive an reminder email about pre-order product availability."
+msgstr ""
+
+#: inc/backend/settings.php:74
+msgid "Email timer"
+msgstr ""
+
+#: inc/backend/settings.php:76
+msgid "Set how many days before the available date of the 'pre-order' product to send the email notifications to the administrators."
+msgstr ""
+
+#: inc/backend/settings.php:77
+msgid "day(s) before available date."
+msgstr ""
+
+#: inc/backend/settings.php:83
+msgid "Customer action"
+msgstr ""
+
+#: inc/backend/settings.php:85
+msgid "Allow customers to choose the type of shipping their mixed products orders"
+msgstr ""
+
+#. translators: %s: Order Splitter plugin install link.
+#: inc/backend/settings.php:88
+msgid "The customer can choose their receiving type on the checkout or order details pages, and administrator will receive the emails if the customers do choosing shipping type. Consider using our %s plugin (free) to split orders if they choose to receive separate orders."
+msgstr ""
+
+#: inc/backend/settings.php:112
+msgid "Need advanced preorder workflows?"
+msgstr ""
+
+#: inc/backend/settings.php:117
+msgid "Pre-Orders for WooCommerce Pro"
+msgstr ""
+
+#: inc/backend/settings.php:118
+msgid "Scale preorder operations with bulk scheduling, automated email sequences, preorder reports, and planned shipment/payment integrations."
+msgstr ""
+
+#: inc/backend/settings.php:120
+msgid "Bulk update preorder status and availability dates."
+msgstr ""
+
+#: inc/backend/settings.php:121
+msgid "Schedule reminder, delay, and availability email sequences."
+msgstr ""
+
+#: inc/backend/settings.php:122
+msgid "Track preorder revenue, upcoming availability, and pending preorder items."
+msgstr ""
+
+#: inc/backend/settings.php:127
+#: inc/backend/upsell-events.php:144
+msgid "Purchase premium plugin"
+msgstr ""
+
+#: inc/backend/upsell-events.php:147
+msgid "Dismiss"
+msgstr ""
+
+#: inc/backend/upsell-events.php:156
+msgid "You do not have permission to dismiss this notice."
+msgstr ""
+
+#: inc/backend/upsell-events.php:246
+msgid "Managing multiple preorder products?"
+msgstr ""
+
+#: inc/backend/upsell-events.php:247
+msgid "You now have several preorder products. Pro workflows can help bulk update preorder status and availability dates from one place."
+msgstr ""
+
+#: inc/backend/upsell-events.php:250
+msgid "Preorder email reminders are active."
+msgstr ""
+
+#: inc/backend/upsell-events.php:251
+msgid "Need reminder, delay, and available-now email sequences? Pro workflows are planned for automated preorder communication."
+msgstr ""
+
+#: inc/backend/upsell-events.php:254
+msgid "Mixed preorder orders detected."
+msgstr ""
+
+#: inc/backend/upsell-events.php:255
+msgid "This store is receiving orders with preorder and in-stock items together. Pro workflows are planned to help automate split shipment handling."
+msgstr ""
+
+#: inc/backend/upsell-events.php:258
+msgid "Preorder products are moving to in-stock."
+msgstr ""
+
+#: inc/backend/upsell-events.php:259
+msgid "Track upcoming releases, pending preorder items, and preorder revenue with the reporting workflows planned for Pro."
+msgstr ""
+
+#: inc/cores/notices.php:27
+msgid "Before using Pre-Orders for WooCommerce,"
+msgstr ""
+
+#: inc/cores/notices.php:27
+msgid "please configure your settings."
+msgstr ""
+
+#: inc/cores/notices.php:28
+msgid "Dismiss this notice"
+msgstr ""
+
+#: inc/cores/notices.php:28
+msgid "Go to the settings"
+msgstr ""
+
+#. translators: %s: plugin review link.
+#: inc/cores/notices.php:55
+msgid "Thank you for using Pre-Orders for WooCommerce. If the plugin helps your store, please consider %s to support continued maintenance."
+msgstr ""
+
+#: inc/cores/notices.php:56
+msgid "leaving a review"
+msgstr ""
+
+#: inc/cores/notices.php:59
+msgid "Never show this again"
+msgstr ""
+
+#: inc/emails/admin-preorder-availability.php:80
+msgid "Pre-order product reminder"
+msgstr ""
+
+#. translators: 1: product name, 2: days before availability, 3: product edit link.
+#: inc/emails/admin-preorder-availability.php:84
+msgid "Hi there,<br><br>The product \"<strong>%1$s</strong>\" is scheduled to become available in %2$d days.<br><br>You can review the product here:<br><br><a href=\"%3$s\">Go to Edit Product page</a><br><br>Thank you."
+msgstr ""
+
+#: inc/emails/admin-preorder-availability.php:106
+msgid "A pre-order product is going to be available soon"
+msgstr ""
+
+#: inc/emails/customer-new-order.php:37
+msgid "Your pre-order is confirmed!"
+msgstr ""
+
+#: inc/emails/customer-new-order.php:52
+msgid "Pre-order confirmation"
+msgstr ""
+
+#: inc/emails/customer-new-order.php:79
+msgid "This is a pre-order."
+msgstr ""
+
+#: inc/emails/customer-new-order.php:83
+msgid "Your order contains pre-order item(s)."
+msgstr ""
+
+#: inc/emails/customer-new-order.php:90
+#: inc/emails/customer-new-order.php:106
+msgid "We will notify you when the item(s) are ready, the expected availability date is shown below."
+msgstr ""
+
+#: inc/emails/customer-new-order.php:94
+#: inc/frontend/customer-actions.php:40
+msgid "You have previously requested to receive all items at once. If you change your mind, please contact support for assistance."
+msgstr ""
+
+#: inc/emails/customer-new-order.php:95
+#: inc/frontend/customer-actions.php:48
+msgid "You have previously requested to receive items separately. If you change your mind, please contact support for assistance."
+msgstr ""
+
+#. translators: %s: order received URL.
+#: inc/emails/customer-new-order.php:101
+msgid "Let us know how you'd like to receive your order by <a href=\"%s\">choosing a shipping option</a>."
+msgstr ""
+
+#. translators: %s: Customer first name
+#: inc/emails/customer-pre-order.php:28
+#: inc/emails/plain/customer-pre-order.php:28
+msgid "Hi %s,"
+msgstr ""
+
+#. translators: %s: Order number
+#: inc/emails/customer-pre-order.php:30
+msgid "Glad to let you know — your pre-order #%s is now available, and it will deliver to you as soon as possible:"
+msgstr ""
+
+#. translators: %s: Order number
+#: inc/emails/plain/customer-pre-order.php:35
+msgid "Glad to let you know, your pre-order #%s is now available, and it will deliver to you as soon as possible:"
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:14
+msgid "Pre-order arrived"
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:15
+msgid "This is a pre-order email notification sent to customers when their pre-order becomes available."
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:17
+msgid "Your pre-order is ready"
+msgstr ""
+
+#. translators: %s is the site title
+#: inc/emails/settings-pre-orders.php:20
+#: inc/emails/settings-pre-orders.php:175
+msgid "Your {site_title} pre-order has arrived!"
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:42
+msgid "Enable/Disable"
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:44
+msgid "Enable this email notification"
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:48
+msgid "Subject"
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:51
+#: inc/emails/settings-pre-orders.php:59
+msgid "Available placeholders: {site_title}, {site_address}, {site_url}, {order_date}, {order_number}"
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:56
+msgid "Email heading"
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:64
+msgid "Additional content"
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:66
+msgid "Text to appear below the main email content. Available placeholders: {site_title}, {site_address}, {site_url}, {order_date}, {order_number}"
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:72
+msgid "Email type"
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:74
+msgid "Choose which format of email to send."
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:182
+msgid "Your pre-order is ready!"
+msgstr ""
+
+#: inc/emails/settings-pre-orders.php:194
+msgid "Customer"
+msgstr ""
+
+#: inc/frontend/cart.php:67
+msgid "Preorder"
+msgstr ""
+
+#: inc/frontend/customer-actions.php:79
+msgid "Your order contains the pre-order item(s). Please let us know what type of receiving you like:"
+msgstr ""
+
+#: inc/frontend/customer-actions.php:86
+#: inc/frontend/customer-actions.php:139
+msgid "I want to receive all items at once"
+msgstr ""
+
+#: inc/frontend/customer-actions.php:93
+#: inc/frontend/customer-actions.php:146
+msgid "I want to receive it separately"
+msgstr ""
+
+#: inc/frontend/customer-actions.php:132
+msgid "Your cart contains pre-order item(s). Please let us know how you’d like to receive everything:"
+msgstr ""
+
+#: inc/frontend/customer-actions.php:190
+#: inc/frontend/customer-actions.php:236
+msgid "Customer requested to receive all products at once."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:192
+#: inc/frontend/customer-actions.php:241
+msgid "Customer requested to receive products separately."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:202
+msgid "Nonce verification failed."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:206
+msgid "Invalid request."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:214
+#: inc/frontend/customer-actions.php:245
+msgid "Invalid action type."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:219
+msgid "Order not found."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:223
+msgid "You are not allowed to update this order."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:227
+msgid "A delivery preference has already been recorded for this order."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:237
+msgid "Thank you for letting us know. You will receive all items at once."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:242
+msgid "Thank you for letting us know. You will receive items separately."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:276
+msgid "Customer delivery request"
+msgstr ""
+
+#: inc/frontend/customer-actions.php:278
+msgid "requested to receive all items at once."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:279
+msgid "requested to receive items separately."
+msgstr ""
+
+#. translators: 1: customer name, 2: order ID, 3: customer action text, 4: order edit URL.
+#: inc/frontend/customer-actions.php:283
+msgid "Hi there,<br><br>Customer <strong>%1$s</strong> (Order ID: #%2$d) %3$s<br><br>You can view the order details here:<br><br><a href=\"%4$s\">Go to Edit Order page</a><br><br>Thank you."
+msgstr ""
+
+#. translators: %d: order ID.
+#: inc/frontend/customer-actions.php:303
+msgid "Customer delivery request on order #%d"
+msgstr ""
+
+#: inc/frontend/customer-actions.php:320
+msgid "Invalid action. Please try again."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:321
+msgid "Got it! We’ll send all items at once when your order is placed."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:322
+msgid "Got it! We’ll ship items separately when your order is placed."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:323
+msgid "An unexpected error occurred."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:324
+msgid "Something went wrong. Please try again."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:325
+msgid "Unable to record your choice. Please refresh and try again."
+msgstr ""
+
+#: inc/frontend/order-table.php:25
+msgid "Pre-ordered"
+msgstr ""
+
+#: inc/frontend/order-table.php:36
+msgid "Available on "
+msgstr ""
+
+#. translators: %s: the available date of the pre-order product
+#: inc/frontend/product-list.php:43
+msgid "This item will be available on <strong>%s</strong>."
+msgstr ""
+
+#. translators: Default “Pre‐order now” if option is empty
+#: inc/frontend/single-product.php:35
+msgid "Pre‐order now"
+msgstr ""
+
+#: inc/frontend/single-product.php:39
+#: inc/frontend/single-product.php:65
+#: inc/frontend/single-product.php:71
+msgid "Add to cart"
+msgstr ""
+
+#. translators: %s: the available date of the pre-order product
+#: inc/frontend/single-product.php:51
+msgid "Available on pre-order<br>This item will be available on <strong>%s</strong>."
+msgstr ""
+
+#: inc/frontend/single-product.php:56
+msgid "Available on pre-order."
+msgstr ""
+
+#: inc/frontend/single-product.php:77
+msgid "Invalid request"
+msgstr ""
+
+#: inc/frontend/single-product.php:83
+msgid "Invalid nonce"
+msgstr ""
+
+#: inc/frontend/single-product.php:94
+msgid "No stock status found"
+msgstr ""
+
+#: pre-orders-wc.php:53
+msgid "Settings"
+msgstr ""
+
+#: pre-orders-wc.php:64
+msgid "Pre-Orders for WooCommerce requires WooCommerce to be installed and active."
+msgstr ""
