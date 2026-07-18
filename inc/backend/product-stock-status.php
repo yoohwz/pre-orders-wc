@@ -24,11 +24,16 @@ class YoOhw_Pre_Orders_WC_Single_Product_Stock_Status {
 	}
 
 	public function enqueue_scripts() {
+		$screen = function_exists('get_current_screen') ? get_current_screen() : null;
+		if (!$screen || 'product' !== $screen->post_type) {
+			return;
+		}
+
 		if (!wp_script_is('jquery', 'enqueued')) {
 			wp_enqueue_script('jquery');
 		}
 
-		wp_enqueue_script('product-stock-status', plugin_dir_url(__FILE__) . '../../js/backend-product-stock-status.js', array('jquery'), '1.1', true);
+		wp_enqueue_script('product-stock-status', plugin_dir_url(__FILE__) . '../../js/backend-product-stock-status.js', array('jquery'), YOOHW_PRE_ORDERS_WC_VERSION, true);
 	}
 
 	public function add_pre_order_stock_status_to_options($status_options) {
@@ -74,7 +79,7 @@ class YoOhw_Pre_Orders_WC_Single_Product_Stock_Status {
 				'label'       => esc_html__('Available date', 'pre-orders-wc'),
 				'placeholder' => 'YYYY-MM-DD HH:MM',
 				'type'        => 'datetime-local',  // Change input type to datetime-local
-				'value'       => esc_attr(get_post_meta($post->ID, '_pre_order_available_date', true)),
+				'value'       => esc_attr(yoohw_pre_orders_wc_get_product_available_date($post->ID)),
 				'desc_tip'    => true,
 				'description' => esc_html__('The date and time when the product will be available for Pre-order.', 'pre-orders-wc'),
 			)
@@ -88,8 +93,7 @@ class YoOhw_Pre_Orders_WC_Single_Product_Stock_Status {
 			wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['wc_pre_orders_nonce'])), 'wc_pre_orders_nonce_action')
 		) {
 			// Sanitize and save date with time
-			$pre_order_date = sanitize_text_field(wp_unslash($_POST['_pre_order_available_date']));
-			update_post_meta($post_id, '_pre_order_available_date', $pre_order_date);
+			$pre_order_date = yoohw_pre_orders_wc_update_product_available_date($post_id, sanitize_text_field(wp_unslash($_POST['_pre_order_available_date'])));
 	
 			// Schedule the event for this product when the date is updated
 			if (class_exists('YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock')) {
@@ -118,7 +122,7 @@ class YoOhw_Pre_Orders_WC_Single_Product_Stock_Status {
 				'label'       => esc_html__('Available date', 'pre-orders-wc'),
 				'placeholder' => 'YYYY-MM-DD HH:MM',
 				'type'        => 'datetime-local',  // Change input type to datetime-local
-				'value'       => esc_attr(get_post_meta($variation->ID, '_pre_order_available_date', true)),
+				'value'       => esc_attr(yoohw_pre_orders_wc_get_product_available_date($variation->ID)),
 				'desc_tip'    => true,
 				'description' => esc_html__('The date and time when this variation will be available for Pre-order.', 'pre-orders-wc'),
 				'wrapper_class' => 'form-row form-row-full pre-order-available-date-input',
@@ -135,10 +139,7 @@ class YoOhw_Pre_Orders_WC_Single_Product_Stock_Status {
 			wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['wc_pre_orders_nonce'])), 'wc_pre_orders_nonce_action')
 		) {
 			// Log the date being processed for this variation
-			$pre_order_date = sanitize_text_field(wp_unslash($_POST['_pre_order_available_date'][$variation_id]));
-
-			// Save the pre-order date to the database
-			update_post_meta($variation_id, '_pre_order_available_date', $pre_order_date);
+			$pre_order_date = yoohw_pre_orders_wc_update_product_available_date($variation_id, sanitize_text_field(wp_unslash($_POST['_pre_order_available_date'][$variation_id])));
 
 			if (class_exists('YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock')) {
 				$scheduler = new YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock();
@@ -154,7 +155,8 @@ class YoOhw_Pre_Orders_WC_Single_Product_Stock_Status {
 
 	// Add pre-order data to variations in front-end
 	public function add_pre_order_data_to_variations($variation) {
-		$variation['_pre_order_available_date'] = get_post_meta($variation['variation_id'], '_pre_order_available_date', true);
+		$variation['_pre_order_available_date'] = yoohw_pre_orders_wc_get_product_available_date($variation['variation_id']);
+		$variation['_extended_status_available_date'] = $variation['_pre_order_available_date'];
 		return $variation;
 	}
 }

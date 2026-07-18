@@ -63,7 +63,7 @@ class YoOhw_Pre_Orders_WC_Customer_Actions {
                 continue;
             }
 
-            $stock_status = $product->get_stock_status();
+            $stock_status = yoohw_pre_orders_wc_get_order_item_stock_status( $item, $product );
 
             if ( 'onpreorder' === $stock_status ) {
                 $has_onpreorder = true;
@@ -108,8 +108,9 @@ class YoOhw_Pre_Orders_WC_Customer_Actions {
 
         // Loop through each cart item, check stock status
         foreach ( WC()->cart->get_cart() as $cart_item ) {
-            $product_id = $cart_item['product_id'];
-            $product    = wc_get_product( $product_id );
+			$product = ! empty( $cart_item['data'] ) && $cart_item['data'] instanceof WC_Product
+				? $cart_item['data']
+				: wc_get_product( ! empty( $cart_item['variation_id'] ) ? $cart_item['variation_id'] : $cart_item['product_id'] );
 
             if ( ! $product ) {
                 continue;
@@ -177,20 +178,7 @@ class YoOhw_Pre_Orders_WC_Customer_Actions {
                 return;
             }
 
-            $order_id = $order->get_id();
-
-            $this->record_customer_action( $order, $action_type );
-
-            $customer_first_name = $order->get_billing_first_name();
-            $order_url           = admin_url( 'post.php?post=' . $order_id . '&action=edit' );
-
-            $this->notify_admin_customer_request( $customer_first_name, $order_id, $order_url, $action_type );
-
-            if ( 'all_at_once' === $action_type ) {
-                $order->add_order_note( __( 'Customer requested to receive all products at once.', 'pre-orders-wc' ) );
-            } else {
-                $order->add_order_note( __( 'Customer requested to receive products separately.', 'pre-orders-wc' ) );
-            }
+			self::apply_customer_action( $order, $action_type );
         }
     }
 
@@ -227,22 +215,14 @@ class YoOhw_Pre_Orders_WC_Customer_Actions {
             wp_send_json_error( [ 'message' => __( 'A delivery preference has already been recorded for this order.', 'pre-orders-wc' ) ] );
         }
 
-        $customer_first_name = $order->get_billing_first_name();
-        $order_url           = admin_url( 'post.php?post=' . $order_id . '&action=edit' );
+		if ( ! self::apply_customer_action( $order, $action_type ) ) {
+			wp_send_json_error( [ 'message' => __( 'Unable to record your delivery preference.', 'pre-orders-wc' ) ] );
+		}
 
-        if ( 'all_at_once' === $action_type ) {
-            $this->notify_admin_customer_request( $customer_first_name, $order_id, $order_url, 'all_at_once' );
-            $this->record_customer_action( $order, $action_type );
-            $order->add_order_note( __( 'Customer requested to receive all products at once.', 'pre-orders-wc' ) );
-            wp_send_json_success( [ 'message' => __( 'Thank you for letting us know. You will receive all items at once.', 'pre-orders-wc' ) ] );
-        } elseif ( 'separately' === $action_type ) {
-            $this->notify_admin_customer_request( $customer_first_name, $order_id, $order_url, 'separately' );
-            $this->record_customer_action( $order, $action_type );
-            $order->add_order_note( __( 'Customer requested to receive products separately.', 'pre-orders-wc' ) );
-            wp_send_json_success( [ 'message' => __( 'Thank you for letting us know. You will receive items separately.', 'pre-orders-wc' ) ] );
-        }
-
-        wp_send_json_error( [ 'message' => __( 'Invalid action type.', 'pre-orders-wc' ) ] );
+		$message = 'all_at_once' === $action_type
+			? __( 'Thank you for letting us know. You will receive all items at once.', 'pre-orders-wc' )
+			: __( 'Thank you for letting us know. You will receive items separately.', 'pre-orders-wc' );
+		wp_send_json_success( [ 'message' => $message ] );
     }
 
     private function is_allowed_action_type( $action_type ) {
@@ -260,15 +240,41 @@ class YoOhw_Pre_Orders_WC_Customer_Actions {
         return $order_key && hash_equals( (string) $order->get_order_key(), (string) $order_key );
     }
 
-    private function record_customer_action( $order, $action_type ) {
-        $order->update_meta_data( '_stock_status_customer_action', $action_type );
-        $order->save();
-    }
+	public static function record_customer_action( $order, $action_type ) {
+		$order->update_meta_data( '_stock_status_customer_action', $action_type );
+		$order->save();
+	}
+
+	public static function apply_customer_action( $order, $action_type ) {
+		if ( ! $order instanceof WC_Order || ! in_array( $action_type, [ 'all_at_once', 'separately' ], true ) ) {
+			return false;
+		}
+		if ( $order->get_meta( '_stock_status_customer_action', true ) ) {
+			return false;
+		}
+
+		self::record_customer_action( $order, $action_type );
+		self::notify_admin_customer_request(
+			$order->get_billing_first_name(),
+			$order->get_id(),
+			$order->get_edit_order_url(),
+			$action_type
+		);
+
+		$order->add_order_note(
+			'all_at_once' === $action_type
+				? __( 'Customer requested to receive all products at once.', 'pre-orders-wc' )
+				: __( 'Customer requested to receive products separately.', 'pre-orders-wc' )
+		);
+		do_action( 'yoohw_pre_orders_wc_delivery_preference_recorded', $order, $action_type );
+
+		return true;
+	}
 
     /**
      * Notify admin about the customer's choice
      */
-    private function notify_admin_customer_request( $customer_name, $order_id, $order_url, $action_type ) {
+	public static function notify_admin_customer_request( $customer_name, $order_id, $order_url, $action_type ) {
         $admin_email = get_option( 'admin_email' );
         $mailer = WC()->mailer();
         $email = new WC_Email();

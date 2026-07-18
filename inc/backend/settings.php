@@ -18,12 +18,12 @@ class YoOhw_Pre_Orders_WC_Settings {
 			$new_sections[$section_id] = $section_label;
 
 			if ('' === $section_id) {
-				$new_sections['stock_status'] = __('Stock status', 'pre-orders-wc');
+				$new_sections['stock_status'] = __('Pre-orders', 'pre-orders-wc');
 			}
 		}
 
 		if (!isset($new_sections['stock_status'])) {
-			$new_sections['stock_status'] = __('Stock status', 'pre-orders-wc');
+			$new_sections['stock_status'] = __('Pre-orders', 'pre-orders-wc');
 		}
 
 		return $new_sections;
@@ -51,7 +51,7 @@ class YoOhw_Pre_Orders_WC_Settings {
 				'id'   => 'pre_orders_support_us',
 			],
 			[
-				'name' => esc_html__('On preorder', 'pre-orders-wc'),
+				'name' => esc_html__('Preorder experience', 'pre-orders-wc'),
 				'type' => 'title',
 				'id'   => 'stock_status_section_title',
 			],
@@ -63,26 +63,26 @@ class YoOhw_Pre_Orders_WC_Settings {
 				'default'  => esc_html__('Pre-order now', 'pre-orders-wc'),
 			],
 			[
-				'name'     => esc_html__('Availability notify', 'pre-orders-wc'),
+				'name'     => esc_html__('Administrator reminder', 'pre-orders-wc'),
 				'type'     => 'checkbox',
-				'desc'     => esc_html__('Enable pre-order product availability emails to the administrator', 'pre-orders-wc'),
-				'desc_tip' => esc_html__('If checked, the site administrator will receive an reminder email about pre-order product availability.', 'pre-orders-wc'),
+				'desc'     => esc_html__('Email administrators before a preorder product becomes available', 'pre-orders-wc'),
+				'desc_tip' => esc_html__('Uses the product availability date and the reminder lead time below.', 'pre-orders-wc'),
 				'id'       => 'yoess_pre_order_email_to_admin',
 				'default'  => 'no',
 			],
 			[
-				'name'     => esc_html__('Email timer', 'pre-orders-wc'),
+				'name'     => esc_html__('Reminder lead time', 'pre-orders-wc'),
 				'type'     => 'number',
 				'desc_tip' => esc_html__('Set how many days before the available date of the \'pre-order\' product to send the email notifications to the administrators.', 'pre-orders-wc'),
 				'desc'     => esc_html__('day(s) before available date.', 'pre-orders-wc'),
 				'id'       => 'yoess_pre_order_email_to_admin_timer',
-				'default'  => 'no',
+				'default'  => '3',
 				'css'      => 'width:60px;',
 			],
 			[
-				'name'     => esc_html__('Customer action', 'pre-orders-wc'),
+				'name'     => esc_html__('Delivery preference', 'pre-orders-wc'),
 				'type'     => 'checkbox',
-				'desc'     => esc_html__('Allow customers to choose the type of shipping their mixed products orders', 'pre-orders-wc'),
+				'desc'     => esc_html__('Let customers choose how mixed preorder orders should be delivered', 'pre-orders-wc'),
 				'desc_tip' => sprintf(
 					/* translators: %s: Order Splitter plugin install link. */
 					esc_html__('The customer can choose their receiving type on the checkout or order details pages, and administrator will receive the emails if the customers do choosing shipping type. Consider using our %s plugin (free) to split orders if they choose to receive separate orders.', 'pre-orders-wc'),
@@ -114,17 +114,17 @@ class YoOhw_Pre_Orders_WC_Settings {
 			<td class="forminp">
 				<div class="yoohw-pre-orders-upgrade-card">
 					<div>
-						<h3><?php esc_html_e('Pre-Orders for WooCommerce Pro', 'pre-orders-wc'); ?></h3>
-						<p><?php esc_html_e('Scale preorder operations with bulk scheduling, automated email sequences, preorder reports, and planned shipment/payment integrations.', 'pre-orders-wc'); ?></p>
+					<h3><?php esc_html_e('WooCommerce Stock Manager', 'pre-orders-wc'); ?></h3>
+						<p><?php esc_html_e('Move from simple preorder scheduling to complete purchasing, receiving, inventory, and fulfillment workflows.', 'pre-orders-wc'); ?></p>
 						<ul>
-							<li><?php esc_html_e('Bulk update preorder status and availability dates.', 'pre-orders-wc'); ?></li>
-							<li><?php esc_html_e('Schedule reminder, delay, and availability email sequences.', 'pre-orders-wc'); ?></li>
-							<li><?php esc_html_e('Track preorder revenue, upcoming availability, and pending preorder items.', 'pre-orders-wc'); ?></li>
+							<li><?php esc_html_e('Plan and receive incoming stock with restock batches.', 'pre-orders-wc'); ?></li>
+							<li><?php esc_html_e('Manage suppliers, purchase orders, reorder suggestions, and multiple locations.', 'pre-orders-wc'); ?></li>
+							<li><?php esc_html_e('Allocate incoming inventory and track fulfillment readiness.', 'pre-orders-wc'); ?></li>
 						</ul>
 					</div>
 					<div class="yoohw-pre-orders-upgrade-actions">
 						<a class="button button-primary" href="<?php echo esc_url($premium_url); ?>" target="_blank" rel="noopener noreferrer">
-							<?php esc_html_e('Purchase premium plugin', 'pre-orders-wc'); ?>
+							<?php esc_html_e('Explore Stock Manager', 'pre-orders-wc'); ?>
 						</a>
 					</div>
 				</div>

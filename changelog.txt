@@ -1,5 +1,17 @@
 === Pre-Orders for WooCommerce ===
 
+= 1.3.0 (July 18, 2026) =
+* New: Added a paginated Preorder overview with operational metrics, schedule filters, product search, open-order demand, and customer-update counts.
+* New: Added maximum preorder quantity per order for simple products and variations, including parent inheritance.
+* New: Added manual delay notifications for affected open orders using the configured WooCommerce email design.
+* New: Added customer delivery preferences to WooCommerce block checkout for mixed preorder carts.
+* Improve: Preserved preorder status and expected-date snapshots on order items so order history remains accurate after products change.
+* Improve: Standardized product dates and order tracking with Stock Manager while retaining legacy free-plugin data for seamless upgrades.
+* Improve: Added official HPOS and Cart/Checkout Blocks compatibility declarations.
+* Improve: Updated settings, upgrade guidance, admin styling, date formatting, and variation handling.
+* Security: Made the optional external subscription integration opt-in and disabled it by default.
+* Dev: Added versioned, idempotent data migration and extension hooks for delivery preferences and database upgrades.
+
 = 1.2.0 (June 13, 2026) =
 * Security: Hardened customer delivery preference AJAX requests by validating nonce, action type, order ownership, order key, and duplicate submissions.
 * Fix: Validated checkout delivery preference nonce before saving customer choices.

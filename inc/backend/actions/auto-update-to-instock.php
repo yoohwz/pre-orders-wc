@@ -22,22 +22,18 @@ class YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock {
 			return;
 		}
 	
-		$pre_order_available_date = $product->get_meta('_pre_order_available_date');
+		$pre_order_available_date = yoohw_pre_orders_wc_get_product_available_date($product);
 	
 		if (empty($pre_order_available_date)) {
 			return;
 		}
 	
-		// Convert date to timestamp
-		try {
-			$datetime = new DateTime($pre_order_available_date, new DateTimeZone(wp_timezone_string()));
-			$timestamp_site = $datetime->getTimestamp();
-		} catch (Exception $e) {
+		$datetime = yoohw_pre_orders_wc_parse_available_date($pre_order_available_date);
+		if (!$datetime) {
 			return;
 		}
-	
-		// Get current timestamp
-		$current_timestamp = (new DateTime('now', new DateTimeZone(wp_timezone_string())))->getTimestamp();
+		$timestamp_site   = $datetime->getTimestamp();
+		$current_timestamp = time();
 	
 		// Unschedule any existing event
 		$this->unschedule_event($product_id);
@@ -60,86 +56,88 @@ class YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock {
 	public function update_pre_order_stock_status($product_id) {
 		$product = wc_get_product($product_id);
 
-		// Check if product exists and is still on pre-order status
-		if ($product && $product->get_stock_status() === 'onpreorder') {
-			// Update stock status to 'instock'
-			$product->set_stock_status('instock');
-			$product->save();
-
-			// Delete the _pre_order_available_date meta after stock status changes to "instock"
-			delete_post_meta($product_id, '_pre_order_available_date');
-
-			// If it's a variation, update the parent product too
-			$parent_id = wp_get_post_parent_id($product_id);
-			if ($parent_id) {
-				$parent_product = wc_get_product($parent_id);
-				if ($parent_product) {
-					$parent_product->set_stock_status('instock');
-					$parent_product->save();
-				}
-				}
-
-				$this->update_orders_with_pre_order_items($product_id);
-				do_action('yoohw_pre_orders_wc_auto_updated_to_instock', $product_id);
-			}
-		}
-
-	private function update_orders_with_pre_order_items($product_id) {
-		$args = array(
-			'limit'        => -1,
-			'return'       => 'ids',
-			'meta_query'   => array(
-				array(
-					'key'     => '_pre_order_items',
-					'value'   => $product_id,
-					'compare' => 'LIKE',
-				),
-			),
-		);
-
-		$order_ids = wc_get_orders($args);
-
-		if (empty($order_ids)) {
+		if (!$product || 'onpreorder' !== $product->get_stock_status()) {
 			return;
 		}
 
-		foreach ($order_ids as $order_id) {
-			$pre_order_items = get_post_meta($order_id, '_pre_order_items', true);
-			$items_array = explode(',', $pre_order_items);
+		$product->set_stock_status('instock');
+		$product->save();
 
-			$updated_items_array = array_filter($items_array, function ($item) use ($product_id) {
-				return trim($item) != $product_id;
-			});
+		yoohw_pre_orders_wc_update_product_available_date($product_id, '');
 
-			if (!empty($updated_items_array)) {
-				update_post_meta($order_id, '_pre_order_items', implode(',', $updated_items_array));
+		// If it is a variation, let WooCommerce derive the parent status from all children.
+		$parent_id = wp_get_post_parent_id($product_id);
+		if ($parent_id && class_exists('WC_Product_Variable')) {
+			WC_Product_Variable::sync_stock_status($parent_id);
+		}
+
+		$this->update_orders_with_pre_order_items($product_id);
+		do_action('yoohw_pre_orders_wc_auto_updated_to_instock', $product_id);
+	}
+
+	private function update_orders_with_pre_order_items($product_id) {
+		$order_ids = array();
+		$page = 1;
+		do {
+			$query = wc_get_orders(
+				array(
+					'limit'      => 250,
+					'page'       => $page,
+					'paginate'   => true,
+					'return'     => 'ids',
+					'status'     => apply_filters('yoohw_pre_orders_wc_open_order_statuses', array('pending', 'processing', 'on-hold')),
+					'meta_query' => array(
+						array(
+							'key'     => '_pre_order_items',
+							'value'   => (string) absint($product_id),
+							'compare' => 'LIKE',
+						),
+					),
+				)
+			);
+			$found_ids = is_object($query) && isset($query->orders) ? (array) $query->orders : (array) $query;
+			$max_pages = is_object($query) && isset($query->max_num_pages) ? absint($query->max_num_pages) : 0;
+			$order_ids = array_merge($order_ids, array_map('absint', $found_ids));
+			$page++;
+		} while ($page <= $max_pages);
+
+		foreach (array_values(array_unique($order_ids)) as $order_id) {
+			$order = wc_get_order($order_id);
+			if (!$order instanceof WC_Order) {
+				continue;
+			}
+			$tracked_ids = yoohw_pre_orders_wc_get_tracked_product_ids($order);
+			if (!in_array(absint($product_id), $tracked_ids, true)) {
+				continue;
+			}
+			$updated_ids = array_values(array_diff($tracked_ids, array(absint($product_id))));
+			if ($updated_ids) {
+				$order->update_meta_data('_pre_order_items', $updated_ids);
 			} else {
-				delete_post_meta($order_id, '_pre_order_items');
+				$order->delete_meta_data('_pre_order_items');
+			}
+			$order->save();
+
+			$has_product = false;
+			foreach ($order->get_items() as $item) {
+				if ((int) $item->get_product_id() === (int) $product_id || (int) $item->get_variation_id() === (int) $product_id) {
+					$has_product = true;
+					break;
+				}
 			}
 
-			$order = wc_get_order($order_id);
-			if ($order) {
-					$has_product = false;
-					foreach ($order->get_items() as $item) {
-						if ((int) $item->get_product_id() === (int) $product_id || (int) $item->get_variation_id() === (int) $product_id) {
-							$has_product = true;
-							break;
-						}
-					}
+			if ($has_product) {
+				$this->send_pre_order_email($order->get_id(), $product_id);
 
-				if ($has_product) {
-					$this->send_pre_order_email($order_id, $product_id);
+				$product = wc_get_product($product_id);
+				$product_name = $product ? $product->get_name() : __('Unknown product', 'pre-orders-wc');
 
-					$product = wc_get_product($product_id);
-					$product_name = $product ? $product->get_name() : __('Unknown product', 'pre-orders-wc');
-
-					$note = sprintf(
-						/* translators: %s: product name. */
-						__('Pre-order item "%s" is now in stock, and the customer has been notified.', 'pre-orders-wc'),
-						$product_name
-					);
-					$order->add_order_note($note);
-				}
+				$note = sprintf(
+					/* translators: %s: product name. */
+					__('Pre-order item "%s" is now in stock, and the customer has been notified.', 'pre-orders-wc'),
+					$product_name
+				);
+				$order->add_order_note($note);
 			}
 		}
 	}

@@ -34,14 +34,14 @@ class YoOhw_Pre_Orders_WC_Product_List {
 	public function display_pre_order_date_message() {
 		global $product;
 		if ($product->get_stock_status() === 'onpreorder') {
-			$pre_order_date = get_post_meta($product->get_id(), '_pre_order_available_date', true);
+			$pre_order_date = yoohw_pre_orders_wc_get_product_available_date($product);
 			if ($pre_order_date) {
 				echo sprintf(
 					'<p class="pre-order-availability-date">' . wp_kses(
 						sprintf(
 							/* translators: %s: the available date of the pre-order product */
 							__('This item will be available on <strong>%s</strong>.', 'pre-orders-wc'),
-							esc_html(date_i18n(get_option('date_format'), strtotime($pre_order_date)))
+							esc_html(yoohw_pre_orders_wc_format_available_date($pre_order_date))
 						),
 						array('strong' => array())
 					) . '</p>'

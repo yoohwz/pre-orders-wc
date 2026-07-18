@@ -141,7 +141,7 @@ class YoOhw_Pre_Orders_WC_Upsell_Events {
 			<p><?php echo esc_html( $notice['message'] ); ?></p>
 			<p>
 				<a class="button button-primary" href="<?php echo esc_url( $premium_url ); ?>" target="_blank" rel="noopener noreferrer">
-					<?php esc_html_e( 'Purchase premium plugin', 'pre-orders-wc' ); ?>
+					<?php esc_html_e( 'Explore Stock Manager', 'pre-orders-wc' ); ?>
 				</a>
 				<a class="button" href="<?php echo esc_url( $dismiss_url ); ?>">
 					<?php esc_html_e( 'Dismiss', 'pre-orders-wc' ); ?>
@@ -244,19 +244,19 @@ class YoOhw_Pre_Orders_WC_Upsell_Events {
 		$notices = [
 			'bulk_scheduler'  => [
 				'title'   => __( 'Managing multiple preorder products?', 'pre-orders-wc' ),
-				'message' => __( 'You now have several preorder products. Pro workflows can help bulk update preorder status and availability dates from one place.', 'pre-orders-wc' ),
+				'message' => __( 'You now have several preorder products. Stock Manager can connect incoming stock, purchasing, receiving, and fulfillment in one workflow.', 'pre-orders-wc' ),
 			],
 			'email_sequences' => [
 				'title'   => __( 'Preorder email reminders are active.', 'pre-orders-wc' ),
-				'message' => __( 'Need reminder, delay, and available-now email sequences? Pro workflows are planned for automated preorder communication.', 'pre-orders-wc' ),
+				'message' => __( 'Stock Manager adds automated inventory alerts, allocation-aware readiness emails, and delivery history.', 'pre-orders-wc' ),
 			],
 			'mixed_orders'    => [
 				'title'   => __( 'Mixed preorder orders detected.', 'pre-orders-wc' ),
-				'message' => __( 'This store is receiving orders with preorder and in-stock items together. Pro workflows are planned to help automate split shipment handling.', 'pre-orders-wc' ),
+				'message' => __( 'This store is receiving mixed preorder orders. Stock Manager can allocate incoming stock and identify orders ready for fulfillment.', 'pre-orders-wc' ),
 			],
 			'reports'         => [
 				'title'   => __( 'Preorder products are moving to in-stock.', 'pre-orders-wc' ),
-				'message' => __( 'Track upcoming releases, pending preorder items, and preorder revenue with the reporting workflows planned for Pro.', 'pre-orders-wc' ),
+				'message' => __( 'Stock Manager adds inventory valuation, incoming-stock, stockout, supplier lead-time, and fulfillment reports.', 'pre-orders-wc' ),
 			],
 		];
 

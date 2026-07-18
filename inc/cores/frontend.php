@@ -13,7 +13,7 @@ class YoOhw_Pre_Orders_WC_Frontend {
 
 	public function frontend_enqueue_scripts() {
 		if (is_cart() || is_checkout() || is_account_page()) {
-			wp_enqueue_style('pre-orders-frontend-css', plugin_dir_url(__FILE__) . '../../css/frontend.css', array(), '1.1');
+			wp_enqueue_style('pre-orders-frontend-css', plugin_dir_url(__FILE__) . '../../css/frontend.css', array(), YOOHW_PRE_ORDERS_WC_VERSION);
 
 			$custom_css = "
 				.stock-status-customer-actions p::before, .stock-status-customer-notice p::before {
@@ -40,6 +40,7 @@ class YoOhw_Pre_Orders_WC_Frontend {
 		include_once plugin_dir_path(__FILE__) . '../frontend/cart.php';
 		include_once plugin_dir_path(__FILE__) . '../frontend/order-table.php';
 		include_once plugin_dir_path(__FILE__) . '../frontend/customer-actions.php';
+		include_once plugin_dir_path(__FILE__) . '../frontend/customer-actions-blocks.php';
 	}
 }
 

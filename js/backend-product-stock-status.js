@@ -9,12 +9,14 @@ jQuery(document).ready(function($) {
 				.find('[id^="_pre_order_available_date"]')
 				.closest('.form-field');
 			var manageStockChecked = $('#_manage_stock').is(':checked');
+			var preOrderLimitField = $('.pre-order-limit-input').not('.woocommerce_variation .pre-order-limit-input');
 
 			if (stockStatus === 'onpreorder' && !manageStockChecked) {
 				preOrderDateField.show();
 			} else {
 				preOrderDateField.hide();
 			}
+			preOrderLimitField.toggle(stockStatus === 'onpreorder');
 		});
 
 		// Variations
@@ -29,12 +31,14 @@ jQuery(document).ready(function($) {
 			var manageStockChecked = $variation
 				.find('input.variable_manage_stock')
 				.is(':checked');
+			var preOrderLimitField = $variation.find('.pre-order-limit-input');
 
 			if (stockStatus === 'onpreorder' && !manageStockChecked) {
 				preOrderDateField.show();
 			} else {
 				preOrderDateField.hide();
 			}
+			preOrderLimitField.toggle(stockStatus === 'onpreorder');
 		});
 	}
 

@@ -115,13 +115,15 @@ class YoOhw_Pre_Orders_WC_Email_New_Order_On_Preorder {
      * @return bool True if all products in the order are 'onpreorder', false otherwise.
      */
     private function order_has_only_on_preorder_products($order) {
+		$has_items = false;
         foreach ($order->get_items() as $item) {
-            $product = $item->get_product();
-            if (!$product || $product->get_stock_status() !== 'onpreorder') {
+			$product = $item->get_product();
+			$has_items = true;
+			if ('onpreorder' !== yoohw_pre_orders_wc_get_order_item_stock_status($item, $product)) {
                 return false;
             }
         }
-        return true;
+        return $has_items;
     }
 
     /**
@@ -133,8 +135,8 @@ class YoOhw_Pre_Orders_WC_Email_New_Order_On_Preorder {
      */
     private function order_has_some_on_preorder_products($order) {
         foreach ($order->get_items() as $item) {
-            $product = $item->get_product();
-            if ($product && $product->get_stock_status() === 'onpreorder') {
+			$product = $item->get_product();
+			if ('onpreorder' === yoohw_pre_orders_wc_get_order_item_stock_status($item, $product)) {
                 return true;
             }
         }
@@ -151,8 +153,8 @@ class YoOhw_Pre_Orders_WC_Email_New_Order_On_Preorder {
     private function get_preorder_items_list($order) {
         $preorder_items = [];
         foreach ($order->get_items() as $item) {
-            $product = $item->get_product();
-            if ($product && $product->get_stock_status() === 'onpreorder') {
+			$product = $item->get_product();
+			if ('onpreorder' === yoohw_pre_orders_wc_get_order_item_stock_status($item, $product)) {
                 $preorder_items[] = $item->get_name();
             }
         }

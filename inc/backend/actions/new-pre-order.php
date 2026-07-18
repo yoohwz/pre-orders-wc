@@ -21,18 +21,26 @@ class YoOhw_Pre_Orders_WC_New_Pre_Order {
 	     * @param array                 $values        Cart item values.
 	     * @param WC_Order              $order         The order object.
 	     */
-	    public function update_pre_order_meta( $item, $cart_item_key, $values, $order ) {
-	        $product = isset( $values['data'] ) ? $values['data'] : null;
-	        if ( ! $product || 'onpreorder' !== $product->get_stock_status() ) {
-	            return;
-	        }
+		    public function update_pre_order_meta( $item, $cart_item_key, $values, $order ) {
+		        unset( $cart_item_key );
 
-	        $pre_order_items = array_filter( array_map( 'absint', explode( ',', (string) $order->get_meta( '_pre_order_items', true ) ) ) );
-	        $pre_order_items[] = absint( $product->get_id() );
-	        $pre_order_items = array_unique( $pre_order_items );
+		        $product = isset( $values['data'] ) ? $values['data'] : null;
+		        if ( ! $product instanceof WC_Product || 'onpreorder' !== $product->get_stock_status() ) {
+		            return;
+		        }
 
-	        $order->update_meta_data( '_pre_order_items', implode( ',', $pre_order_items ) );
-	    }
+		        $product_id = $product->get_id();
+		        $item->add_meta_data( '_wcess_stock_status', 'onpreorder', true );
+		        $available_date = yoohw_pre_orders_wc_get_product_available_date( $product );
+		        if ( '' !== $available_date ) {
+		            $item->add_meta_data( '_wcess_available_date', $available_date, true );
+		        }
+
+		        $pre_order_items   = yoohw_pre_orders_wc_get_tracked_product_ids( $order );
+		        $pre_order_items[] = absint( $product_id );
+		        $order->update_meta_data( '_pre_order_marked', '1' );
+		        $order->update_meta_data( '_pre_order_items', array_values( array_unique( array_filter( $pre_order_items ) ) ) );
+		    }
 	}
 
 // Initialize the class

@@ -18,9 +18,13 @@
 #stock_status {
     width: 12%;
 }
-/* Variable product */
-.pre-order-available-date-input {
-    margin-bottom: 54px;
+/* Variable products */
+.woocommerce_variation .pre-order-available-date-input,
+.woocommerce_variation .pre-order-limit-input {
+	float: none;
+	clear: both;
+	width: 100%;
+	margin: 0;
 }
 
 .yoohw-pre-orders-upgrade-card {
@@ -70,4 +74,87 @@
     .yoohw-pre-orders-upgrade-actions .button {
         text-align: center;
     }
+}
+
+.yoohw-preorders-summary {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 12px;
+	margin: 20px 0;
+}
+.yoohw-preorders-metric {
+	padding: 16px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #fff;
+}
+.yoohw-preorders-metric span,
+.yoohw-preorders-metric strong {
+	display: block;
+}
+.yoohw-preorders-metric span {
+	color: #646970;
+}
+.yoohw-preorders-metric strong {
+	margin-top: 6px;
+	font-size: 24px;
+	line-height: 1.2;
+}
+.yoohw-preorders-filters {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 12px;
+}
+.yoohw-preorders-filters input[type="search"] {
+	min-width: 240px;
+}
+.yoohw-preorders-muted {
+	margin-top: 4px;
+	color: #646970;
+}
+.yoohw-preorders-status {
+	display: inline-block;
+	padding: 3px 9px;
+	border-radius: 999px;
+	background: #f0f0f1;
+}
+.yoohw-preorders-status--overdue {
+	color: #8a2424;
+	background: #fcdddd;
+}
+.yoohw-preorders-status--due_soon {
+	color: #6e4b00;
+	background: #fcf0c3;
+}
+.yoohw-preorders-status--scheduled {
+	color: #176b2c;
+	background: #dff2e3;
+}
+.yoohw-preorders-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+.yoohw-preorders-actions form {
+	margin: 0;
+}
+.yoohw-preorders-upgrade-inline {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 18px;
+	padding: 14px 16px;
+	border-left: 4px solid #2271b1;
+	background: #fff;
+}
+@media (max-width: 782px) {
+	.yoohw-preorders-filters {
+		align-items: stretch;
+		flex-direction: column;
+	}
+	.yoohw-preorders-filters input[type="search"] {
+		min-width: 0;
+		width: 100%;
+	}
 }

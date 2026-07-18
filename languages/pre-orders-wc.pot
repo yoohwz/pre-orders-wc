@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Pre-Orders for WooCommerce 1.2.0\n"
+"Project-Id-Version: Pre-Orders for WooCommerce 1.3.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/pre-orders-wc\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-13T06:45:28+00:00\n"
+"POT-Creation-Date: 2026-07-18T14:12:45+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.9.0\n"
 "X-Domain: pre-orders-wc\n"
@@ -34,12 +34,12 @@ msgstr ""
 msgid "https://yoohw.com"
 msgstr ""
 
-#: inc/backend/actions/auto-update-to-instock.php:134
+#: inc/backend/actions/auto-update-to-instock.php:133
 msgid "Unknown product"
 msgstr ""
 
 #. translators: %s: product name.
-#: inc/backend/actions/auto-update-to-instock.php:138
+#: inc/backend/actions/auto-update-to-instock.php:137
 msgid "Pre-order item \"%s\" is now in stock, and the customer has been notified."
 msgstr ""
 
@@ -49,26 +49,260 @@ msgstr ""
 
 #. translators: %s: the available date of the pre-order product.
 #: inc/backend/edit-order.php:23
-#: inc/frontend/cart.php:71
+#: inc/frontend/cart.php:63
 msgid "Available on %s"
 msgstr ""
 
-#: inc/backend/product-stock-status.php:35
-#: inc/backend/settings.php:54
-#: inc/frontend/cart.php:77
-msgid "On preorder"
+#: inc/backend/preorder-limits.php:26
+#: inc/backend/preorder-limits.php:51
+msgid "Preorder limit"
 msgstr ""
 
-#: inc/backend/product-stock-status.php:74
-#: inc/backend/product-stock-status.php:118
+#: inc/backend/preorder-limits.php:27
+msgid "Limit how many units of this preorder product a customer can place in one order. Enter 0 for no limit."
+msgstr ""
+
+#: inc/backend/preorder-limits.php:52
+msgid "Leave blank to inherit the parent product limit. Enter 0 for no limit."
+msgstr ""
+
+#. translators: %d: maximum preorder quantity per order.
+#: inc/backend/preorder-limits.php:113
+msgid "You can add a maximum of %d unit(s) of this preorder product to one order."
+msgstr ""
+
+#: inc/backend/preorder-overview.php:23
+msgid "Product"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:24
+#: inc/backend/product-stock-status.php:79
+#: inc/backend/product-stock-status.php:122
 msgid "Available date"
 msgstr ""
 
-#: inc/backend/product-stock-status.php:79
+#: inc/backend/preorder-overview.php:25
+msgid "Schedule status"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:26
+#: inc/backend/preorder-overview.php:188
+msgid "Open orders"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:27
+#: inc/backend/preorder-overview.php:189
+msgid "Preorder units"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:28
+msgid "Customer updates"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:29
+msgid "Actions"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:57
+msgid "No preorder products match this view."
+msgstr ""
+
+#. translators: %s: product SKU.
+#: inc/backend/preorder-overview.php:85
+msgid "SKU: %s"
+msgstr ""
+
+#. translators: %d: WooCommerce product ID.
+#: inc/backend/preorder-overview.php:87
+msgid "Product ID: %d"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:94
+msgid "Up to date"
+msgstr ""
+
+#. translators: %d: number of orders awaiting a delay notification.
+#: inc/backend/preorder-overview.php:99
+msgid "%d order(s) to notify"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:109
+msgid "Edit product"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:116
+msgid "Notify customers"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:138
+#: inc/backend/preorder-overview.php:183
+msgid "Preorder overview"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:139
+#: inc/backend/settings.php:21
+#: inc/backend/settings.php:26
+#: pre-orders-wc.php:63
+msgid "Pre-orders"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:153
+msgid "Preorders per page"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:170
+msgid "You do not have permission to view preorder operations."
+msgstr ""
+
+#: inc/backend/preorder-overview.php:184
+msgid "Track active preorder products, open preorder demand, upcoming availability, and customer date updates."
+msgstr ""
+
+#: inc/backend/preorder-overview.php:187
+msgid "Active products"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:190
+#: inc/backend/preorder-overview.php:534
+msgid "Due in 7 days"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:191
+#: inc/backend/preorder-overview.php:509
+#: inc/backend/preorder-overview.php:535
+msgid "Overdue"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:192
+msgid "Customers to notify"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:197
+msgid "View"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:203
+msgid "Search preorders"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:204
+msgid "Search product or SKU"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:205
+msgid "Filter"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:209
+msgid "Need purchasing and inventory workflows?"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:210
+msgid "Stock Manager adds restock batches, receiving, inventory movements, suppliers, purchase orders, allocation, and multi-location stock."
+msgstr ""
+
+#: inc/backend/preorder-overview.php:211
+#: inc/backend/settings.php:127
+#: inc/backend/upsell-events.php:144
+msgid "Explore Stock Manager"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:219
+msgid "You do not have permission to notify preorder customers."
+msgstr ""
+
+#: inc/backend/preorder-overview.php:275
+#: inc/backend/preorder-overview.php:537
+msgid "No date set"
+msgstr ""
+
+#. translators: 1: product name, 2: previous date, 3: new date.
+#: inc/backend/preorder-overview.php:392
+msgid "Preorder availability update sent for “%1$s”. Previous date: %2$s. New date: %3$s."
+msgstr ""
+
+#. translators: %s: order number.
+#: inc/backend/preorder-overview.php:438
+msgid "Preorder availability update for order %s"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:443
+msgid "The expected availability date for one of your preorder items has changed."
+msgstr ""
+
+#: inc/backend/preorder-overview.php:444
+msgid "Item:"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:446
+msgid "Previous date:"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:448
+msgid "New expected date:"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:451
+msgid "View your order"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:455
+msgid "Preorder availability updated"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:510
+msgid "Due soon"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:511
+msgid "Scheduled"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:512
+msgid "No date"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:520
+msgid "No availability date configured"
+msgstr ""
+
+#. translators: %s: human-readable amount of time.
+#: inc/backend/preorder-overview.php:524
+msgid "Overdue by %s"
+msgstr ""
+
+#. translators: %s: human-readable amount of time.
+#: inc/backend/preorder-overview.php:528
+msgid "Due in %s"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:533
+msgid "All active preorders"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:536
+msgid "Scheduled later"
+msgstr ""
+
+#: inc/backend/preorder-overview.php:553
+msgid "The preorder product could not be found."
+msgstr ""
+
+#. translators: 1: emails sent, 2: emails skipped.
+#: inc/backend/preorder-overview.php:559
+msgid "%1$d customer update(s) sent; %2$d skipped."
+msgstr ""
+
+#: inc/backend/product-stock-status.php:40
+#: inc/frontend/cart.php:69
+msgid "On preorder"
+msgstr ""
+
+#: inc/backend/product-stock-status.php:84
 msgid "The date and time when the product will be available for Pre-order."
 msgstr ""
 
-#: inc/backend/product-stock-status.php:123
+#: inc/backend/product-stock-status.php:127
 msgid "The date and time when this variation will be available for Pre-order."
 msgstr ""
 
@@ -76,13 +310,12 @@ msgstr ""
 msgid "Stock"
 msgstr ""
 
-#: inc/backend/settings.php:21
-#: inc/backend/settings.php:26
-msgid "Stock status"
-msgstr ""
-
 #: inc/backend/settings.php:44
 msgid "Order Splitter"
+msgstr ""
+
+#: inc/backend/settings.php:54
+msgid "Preorder experience"
 msgstr ""
 
 #: inc/backend/settings.php:59
@@ -100,19 +333,19 @@ msgid "Pre-order now"
 msgstr ""
 
 #: inc/backend/settings.php:66
-msgid "Availability notify"
+msgid "Administrator reminder"
 msgstr ""
 
 #: inc/backend/settings.php:68
-msgid "Enable pre-order product availability emails to the administrator"
+msgid "Email administrators before a preorder product becomes available"
 msgstr ""
 
 #: inc/backend/settings.php:69
-msgid "If checked, the site administrator will receive an reminder email about pre-order product availability."
+msgid "Uses the product availability date and the reminder lead time below."
 msgstr ""
 
 #: inc/backend/settings.php:74
-msgid "Email timer"
+msgid "Reminder lead time"
 msgstr ""
 
 #: inc/backend/settings.php:76
@@ -124,11 +357,11 @@ msgid "day(s) before available date."
 msgstr ""
 
 #: inc/backend/settings.php:83
-msgid "Customer action"
+msgid "Delivery preference"
 msgstr ""
 
 #: inc/backend/settings.php:85
-msgid "Allow customers to choose the type of shipping their mixed products orders"
+msgid "Let customers choose how mixed preorder orders should be delivered"
 msgstr ""
 
 #. translators: %s: Order Splitter plugin install link.
@@ -141,28 +374,23 @@ msgid "Need advanced preorder workflows?"
 msgstr ""
 
 #: inc/backend/settings.php:117
-msgid "Pre-Orders for WooCommerce Pro"
+msgid "WooCommerce Stock Manager"
 msgstr ""
 
 #: inc/backend/settings.php:118
-msgid "Scale preorder operations with bulk scheduling, automated email sequences, preorder reports, and planned shipment/payment integrations."
+msgid "Move from simple preorder scheduling to complete purchasing, receiving, inventory, and fulfillment workflows."
 msgstr ""
 
 #: inc/backend/settings.php:120
-msgid "Bulk update preorder status and availability dates."
+msgid "Plan and receive incoming stock with restock batches."
 msgstr ""
 
 #: inc/backend/settings.php:121
-msgid "Schedule reminder, delay, and availability email sequences."
+msgid "Manage suppliers, purchase orders, reorder suggestions, and multiple locations."
 msgstr ""
 
 #: inc/backend/settings.php:122
-msgid "Track preorder revenue, upcoming availability, and pending preorder items."
-msgstr ""
-
-#: inc/backend/settings.php:127
-#: inc/backend/upsell-events.php:144
-msgid "Purchase premium plugin"
+msgid "Allocate incoming inventory and track fulfillment readiness."
 msgstr ""
 
 #: inc/backend/upsell-events.php:147
@@ -178,7 +406,7 @@ msgid "Managing multiple preorder products?"
 msgstr ""
 
 #: inc/backend/upsell-events.php:247
-msgid "You now have several preorder products. Pro workflows can help bulk update preorder status and availability dates from one place."
+msgid "You now have several preorder products. Stock Manager can connect incoming stock, purchasing, receiving, and fulfillment in one workflow."
 msgstr ""
 
 #: inc/backend/upsell-events.php:250
@@ -186,7 +414,7 @@ msgid "Preorder email reminders are active."
 msgstr ""
 
 #: inc/backend/upsell-events.php:251
-msgid "Need reminder, delay, and available-now email sequences? Pro workflows are planned for automated preorder communication."
+msgid "Stock Manager adds automated inventory alerts, allocation-aware readiness emails, and delivery history."
 msgstr ""
 
 #: inc/backend/upsell-events.php:254
@@ -194,7 +422,7 @@ msgid "Mixed preorder orders detected."
 msgstr ""
 
 #: inc/backend/upsell-events.php:255
-msgid "This store is receiving orders with preorder and in-stock items together. Pro workflows are planned to help automate split shipment handling."
+msgid "This store is receiving mixed preorder orders. Stock Manager can allocate incoming stock and identify orders ready for fulfillment."
 msgstr ""
 
 #: inc/backend/upsell-events.php:258
@@ -202,7 +430,7 @@ msgid "Preorder products are moving to in-stock."
 msgstr ""
 
 #: inc/backend/upsell-events.php:259
-msgid "Track upcoming releases, pending preorder items, and preorder revenue with the reporting workflows planned for Pro."
+msgid "Stock Manager adds inventory valuation, incoming-stock, stockout, supplier lead-time, and fulfillment reports."
 msgstr ""
 
 #: inc/cores/notices.php:27
@@ -362,8 +590,39 @@ msgstr ""
 msgid "Customer"
 msgstr ""
 
-#: inc/frontend/cart.php:67
+#: inc/frontend/cart.php:59
 msgid "Preorder"
+msgstr ""
+
+#: inc/frontend/customer-actions-blocks.php:21
+#: inc/frontend/customer-actions.php:326
+msgid "Invalid action. Please try again."
+msgstr ""
+
+#: inc/frontend/customer-actions-blocks.php:22
+#: inc/frontend/customer-actions.php:327
+msgid "Got it! We’ll send all items at once when your order is placed."
+msgstr ""
+
+#: inc/frontend/customer-actions-blocks.php:23
+#: inc/frontend/customer-actions.php:328
+msgid "Got it! We’ll ship items separately when your order is placed."
+msgstr ""
+
+#: inc/frontend/customer-actions-blocks.php:88
+msgid "Customer preorder delivery preference."
+msgstr ""
+
+#: inc/frontend/customer-actions-blocks.php:184
+msgid "Your cart contains preorder and currently available items. How would you like to receive them?"
+msgstr ""
+
+#: inc/frontend/customer-actions-blocks.php:186
+msgid "Receive all items at once"
+msgstr ""
+
+#: inc/frontend/customer-actions-blocks.php:187
+msgid "Receive available items separately"
 msgstr ""
 
 #: inc/frontend/customer-actions.php:79
@@ -371,113 +630,102 @@ msgid "Your order contains the pre-order item(s). Please let us know what type o
 msgstr ""
 
 #: inc/frontend/customer-actions.php:86
-#: inc/frontend/customer-actions.php:139
+#: inc/frontend/customer-actions.php:140
 msgid "I want to receive all items at once"
 msgstr ""
 
 #: inc/frontend/customer-actions.php:93
-#: inc/frontend/customer-actions.php:146
+#: inc/frontend/customer-actions.php:147
 msgid "I want to receive it separately"
 msgstr ""
 
-#: inc/frontend/customer-actions.php:132
+#: inc/frontend/customer-actions.php:133
 msgid "Your cart contains pre-order item(s). Please let us know how you’d like to receive everything:"
 msgstr ""
 
 #: inc/frontend/customer-actions.php:190
-#: inc/frontend/customer-actions.php:236
-msgid "Customer requested to receive all products at once."
-msgstr ""
-
-#: inc/frontend/customer-actions.php:192
-#: inc/frontend/customer-actions.php:241
-msgid "Customer requested to receive products separately."
-msgstr ""
-
-#: inc/frontend/customer-actions.php:202
 msgid "Nonce verification failed."
 msgstr ""
 
-#: inc/frontend/customer-actions.php:206
+#: inc/frontend/customer-actions.php:194
 msgid "Invalid request."
 msgstr ""
 
-#: inc/frontend/customer-actions.php:214
-#: inc/frontend/customer-actions.php:245
+#: inc/frontend/customer-actions.php:202
 msgid "Invalid action type."
 msgstr ""
 
-#: inc/frontend/customer-actions.php:219
+#: inc/frontend/customer-actions.php:207
 msgid "Order not found."
 msgstr ""
 
-#: inc/frontend/customer-actions.php:223
+#: inc/frontend/customer-actions.php:211
 msgid "You are not allowed to update this order."
 msgstr ""
 
-#: inc/frontend/customer-actions.php:227
+#: inc/frontend/customer-actions.php:215
 msgid "A delivery preference has already been recorded for this order."
 msgstr ""
 
-#: inc/frontend/customer-actions.php:237
+#: inc/frontend/customer-actions.php:219
+msgid "Unable to record your delivery preference."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:223
 msgid "Thank you for letting us know. You will receive all items at once."
 msgstr ""
 
-#: inc/frontend/customer-actions.php:242
+#: inc/frontend/customer-actions.php:224
 msgid "Thank you for letting us know. You will receive items separately."
 msgstr ""
 
-#: inc/frontend/customer-actions.php:276
+#: inc/frontend/customer-actions.php:266
+msgid "Customer requested to receive all products at once."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:267
+msgid "Customer requested to receive products separately."
+msgstr ""
+
+#: inc/frontend/customer-actions.php:282
 msgid "Customer delivery request"
 msgstr ""
 
-#: inc/frontend/customer-actions.php:278
+#: inc/frontend/customer-actions.php:284
 msgid "requested to receive all items at once."
 msgstr ""
 
-#: inc/frontend/customer-actions.php:279
+#: inc/frontend/customer-actions.php:285
 msgid "requested to receive items separately."
 msgstr ""
 
 #. translators: 1: customer name, 2: order ID, 3: customer action text, 4: order edit URL.
-#: inc/frontend/customer-actions.php:283
+#: inc/frontend/customer-actions.php:289
 msgid "Hi there,<br><br>Customer <strong>%1$s</strong> (Order ID: #%2$d) %3$s<br><br>You can view the order details here:<br><br><a href=\"%4$s\">Go to Edit Order page</a><br><br>Thank you."
 msgstr ""
 
 #. translators: %d: order ID.
-#: inc/frontend/customer-actions.php:303
+#: inc/frontend/customer-actions.php:309
 msgid "Customer delivery request on order #%d"
 msgstr ""
 
-#: inc/frontend/customer-actions.php:320
-msgid "Invalid action. Please try again."
-msgstr ""
-
-#: inc/frontend/customer-actions.php:321
-msgid "Got it! We’ll send all items at once when your order is placed."
-msgstr ""
-
-#: inc/frontend/customer-actions.php:322
-msgid "Got it! We’ll ship items separately when your order is placed."
-msgstr ""
-
-#: inc/frontend/customer-actions.php:323
+#: inc/frontend/customer-actions.php:329
 msgid "An unexpected error occurred."
 msgstr ""
 
-#: inc/frontend/customer-actions.php:324
+#: inc/frontend/customer-actions.php:330
 msgid "Something went wrong. Please try again."
 msgstr ""
 
-#: inc/frontend/customer-actions.php:325
+#: inc/frontend/customer-actions.php:331
 msgid "Unable to record your choice. Please refresh and try again."
 msgstr ""
 
-#: inc/frontend/order-table.php:25
+#: inc/frontend/order-table.php:24
 msgid "Pre-ordered"
 msgstr ""
 
-#: inc/frontend/order-table.php:36
+#: inc/frontend/order-table.php:30
 msgid "Available on "
 msgstr ""
 
@@ -518,10 +766,10 @@ msgstr ""
 msgid "No stock status found"
 msgstr ""
 
-#: pre-orders-wc.php:53
+#: pre-orders-wc.php:64
 msgid "Settings"
 msgstr ""
 
-#: pre-orders-wc.php:64
+#: pre-orders-wc.php:84
 msgid "Pre-Orders for WooCommerce requires WooCommerce to be installed and active."
 msgstr ""

@@ -43,13 +43,13 @@ class YoOhw_Pre_Orders_WC_Single_Product {
 
 	public function display_pre_order_stock_status($availability, $product) {
 		if ($product->get_stock_status() === 'onpreorder') {
-			$pre_order_date = get_post_meta($product->get_id(), '_pre_order_available_date', true);
+			$pre_order_date = yoohw_pre_orders_wc_get_product_available_date($product);
 			if ($pre_order_date) {
 				/* translators: %s: the available date of the pre-order product */
 				$availability['availability'] = sprintf(
 					/* translators: %s: the available date of the pre-order product */
 					wp_kses_post(__('Available on pre-order<br>This item will be available on <strong>%s</strong>.', 'pre-orders-wc')),
-					esc_html(date_i18n(get_option('date_format'), strtotime($pre_order_date)))
+					esc_html(yoohw_pre_orders_wc_format_available_date($pre_order_date))
 				);
 							
 			} else {

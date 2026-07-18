@@ -39,9 +39,11 @@ class YoOhw_Pre_Orders_WC_Backend {
 	public function includes() {
 		include_once plugin_dir_path(__FILE__) . '../backend/settings.php';
 		include_once plugin_dir_path(__FILE__) . '../backend/product-stock-status.php';
+		include_once plugin_dir_path(__FILE__) . '../backend/preorder-limits.php';
 		include_once plugin_dir_path(__FILE__) . '../backend/products.php';
 		include_once plugin_dir_path(__FILE__) . '../backend/edit-order.php';
 		include_once plugin_dir_path(__FILE__) . '../backend/upsell-events.php';
+		include_once plugin_dir_path(__FILE__) . '../backend/preorder-overview.php';
 		include_once plugin_dir_path(__FILE__) . '../backend/actions/auto-update-to-instock.php';
 		include_once plugin_dir_path(__FILE__) . '../backend/actions/new-pre-order.php';
 		include_once plugin_dir_path(__FILE__) . '../emails/customer-new-order.php';

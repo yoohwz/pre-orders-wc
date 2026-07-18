@@ -50,16 +50,8 @@ class YoOhw_Pre_Orders_WC_Cart_Checkout {
 			return $data;
 		}
 
-		$available_date = get_post_meta( $product->get_id(), '_pre_order_available_date', true );
-
-		// Format date if present.
-		$formatted_date = '';
-		if ( $available_date ) {
-			$ts = strtotime( $available_date );
-			if ( $ts ) {
-				$formatted_date = date_i18n( get_option( 'date_format' ), $ts );
-			}
-		}
+		$available_date = yoohw_pre_orders_wc_get_product_available_date( $product );
+		$formatted_date = yoohw_pre_orders_wc_format_available_date( $available_date );
 
 		// Build label + value depending on whether date exists.
 		if ( $formatted_date ) {

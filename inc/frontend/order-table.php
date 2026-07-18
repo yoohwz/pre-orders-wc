@@ -18,22 +18,16 @@ class YoOhw_Pre_Orders_WC_Order_Table {
 		if ($item instanceof WC_Order_Item_Product) {
 			$product = $item->get_product();
 	
-			// Check if the product exists and has the 'onpreorder' stock status
-			if ($product && $product->get_stock_status() === 'onpreorder') {
+			if ('onpreorder' === yoohw_pre_orders_wc_get_order_item_stock_status($item, $product)) {
 				echo '<ul class="wc-item-meta">';
 				echo '<li>';
 				echo '<strong class="wc-item-meta-label">' . esc_html__('Pre-ordered', 'pre-orders-wc') . '</strong>:';
 	
 				// Retrieve the '_pre_order_available_date' meta and format it
-				$pre_order_available_date = get_post_meta($product->get_id(), '_pre_order_available_date', true);
+				$pre_order_available_date = yoohw_pre_orders_wc_get_order_item_available_date($item, $product);
 	
 				if (!empty($pre_order_available_date)) {
-					// Convert the date to the site timezone for display
-					$date = new DateTime($pre_order_available_date, new DateTimeZone('UTC'));
-					$date->setTimezone(new DateTimeZone(wp_timezone_string()));  // Site timezone setting
-	
-					// Display only the available date under 'Pre-order item' using the site's date format
-					echo ' ' . esc_html__('Available on ', 'pre-orders-wc') . esc_html(date_i18n(get_option('date_format'), $date->getTimestamp()));
+					echo ' ' . esc_html__('Available on ', 'pre-orders-wc') . esc_html(yoohw_pre_orders_wc_format_available_date($pre_order_available_date));
 				}
 
 				echo '</li>';

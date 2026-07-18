@@ -8,7 +8,7 @@ class YoOhw_Pre_Orders_WC_Push_Subscription {
 	const SUBSCRIBE_API_ENDPOINT = 'https://yoexpress.top/wp-json/yo-pr/v1/email-subscriptions';
 
 	public static function push_subscription() {
-		$enabled = (bool) apply_filters( 'yoohw_pre_orders_wc_enable_push_subscription', true );
+		$enabled = (bool) apply_filters( 'yoohw_pre_orders_wc_enable_push_subscription', false );
 		if ( ! $enabled ) {
 			return false;
 		}

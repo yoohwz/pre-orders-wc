@@ -11,3 +11,16 @@
 .stock-status-customer-notice p {
 	margin-bottom: 0 !important;
 }
+.stock-status-customer-actions-button {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-top: 14px;
+}
+.stock-status-customer-actions-note {
+	margin-top: 10px;
+}
+.button-customer-actions.selected {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}

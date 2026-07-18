@@ -15,12 +15,12 @@ class YoOhw_Pre_Orders_WC_Edit_Order {
 		// Ensure the item is a product
 		if (is_a($item, 'WC_Order_Item_Product')) {
 			$product = $item->get_product();
-			if ($product && $product->get_stock_status() === 'onpreorder') {
+			if ('onpreorder' === yoohw_pre_orders_wc_get_order_item_stock_status($item, $product)) {
 				$pre_order_message = '<div class="item-meta-preorder"><strong>' . esc_html__('Pre-order', 'pre-orders-wc') . '</strong>';
-				$pre_order_date = get_post_meta($product->get_id(), '_pre_order_available_date', true);
+				$pre_order_date = yoohw_pre_orders_wc_get_order_item_available_date($item, $product);
 				if ($pre_order_date) {
 					/* translators: %s: the available date of the pre-order product. */
-					$pre_order_message .= '<strong>:</strong> ' . sprintf(esc_html__('Available on %s', 'pre-orders-wc'), esc_html(date_i18n(get_option('date_format'), strtotime($pre_order_date))));
+					$pre_order_message .= '<strong>:</strong> ' . sprintf(esc_html__('Available on %s', 'pre-orders-wc'), esc_html(yoohw_pre_orders_wc_format_available_date($pre_order_date)));
 				}
 				$pre_order_message .= '</div>';
 				echo wp_kses_post($pre_order_message);
@@ -36,7 +36,7 @@ class YoOhw_Pre_Orders_WC_Edit_Order {
 		foreach ($order->get_items() as $item) {
 			$product = $item->get_product();
 			if ($product) {
-				$stock_status = $product->get_stock_status();
+				$stock_status = yoohw_pre_orders_wc_get_order_item_stock_status($item, $product);
 	
 				if ($stock_status === 'onpreorder') {
 					$has_preorder = true;
@@ -105,7 +105,7 @@ class YoOhw_Pre_Orders_WC_Edit_Order {
 				foreach ($order->get_items() as $item) {
 					$product = $item->get_product();
 					if ($product) {
-						$stock_status = $product->get_stock_status();
+					$stock_status = yoohw_pre_orders_wc_get_order_item_stock_status($item, $product);
 	
 						if ($stock_status === 'onpreorder') {
 							$has_preorder = true;
