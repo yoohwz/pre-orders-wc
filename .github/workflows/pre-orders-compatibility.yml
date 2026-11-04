@@ -1,0 +1,209 @@
+name: Pre-Orders CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  classify:
+    name: Classify change
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      full: ${{ steps.select.outputs.full }}
+      quality: ${{ steps.select.outputs.quality }}
+      javascript: ${{ steps.select.outputs.javascript }}
+      integration: ${{ steps.select.outputs.integration }}
+      matrix: ${{ steps.select.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Select checks and compatibility environments
+        id: select
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_DRAFT: ${{ github.event.pull_request.draft || false }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == workflow_dispatch || -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            git ls-files > "$RUNNER_TEMP/changed-files.txt"
+          else
+            git diff --no-renames --name-only "$BASE_SHA" HEAD > "$RUNNER_TEMP/changed-files.txt"
+          fi
+          python3 bin/classify-ci.py --event-name "$EVENT_NAME" --pr-draft "$PR_DRAFT" \
+            --changed-files "$RUNNER_TEMP/changed-files.txt" --github-output "$GITHUB_OUTPUT"
+
+  repository-contracts:
+    name: Repository contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Test CI routing, gates and repository contracts
+        run: python3 -m unittest discover -s tests/ci -p 'test_*.py' -v
+      - name: Diff hygiene
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            git diff --check "$BASE_SHA" HEAD
+          else
+            git show --format= --check HEAD
+          fi
+
+  quality:
+    name: PHP syntax and source contracts
+    needs: classify
+    if: ${{ needs.classify.outputs.quality == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      - name: PHP syntax and source contracts
+        run: |
+          find . -path './.git' -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
+          php tests/smoke/source-contract.php
+
+  javascript:
+    name: JavaScript syntax
+    needs: classify
+    if: ${{ needs.classify.outputs.javascript == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: JavaScript syntax
+        run: find js -name '*.js' -print0 | xargs -0 -r -n1 node --check
+
+  integration:
+    name: WP ${{ matrix.wordpress }} / WC ${{ matrix.woocommerce }} / PHP ${{ matrix.php }} / ${{ matrix.order_storage }}
+    needs: classify
+    if: ${{ needs.classify.outputs.integration == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.classify.outputs.matrix) }}
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: wordpress
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Check out Pre-Orders
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up PHP and WP-CLI
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli
+          tools: wp-cli
+          coverage: none
+
+      - name: Install WordPress and WooCommerce
+        env:
+          WP_VERSION: ${{ matrix.wordpress }}
+          WC_VERSION: ${{ matrix.woocommerce }}
+          ORDER_STORAGE: ${{ matrix.order_storage }}
+        run: |
+          WP_PATH="$RUNNER_TEMP/wordpress"
+          wp core download --path="$WP_PATH" --version="$WP_VERSION" --force
+          wp config create --path="$WP_PATH" --dbname=wordpress --dbuser=root --dbpass=root --dbhost=127.0.0.1:3306 --skip-check
+          wp core install --path="$WP_PATH" --url=https://pre-orders.test --title="Pre-Orders CI" --admin_user=admin --admin_password=password --admin_email=admin@example.test --skip-email
+          wp plugin install woocommerce --path="$WP_PATH" --version="$WC_VERSION" --activate
+          ln -s "$GITHUB_WORKSPACE" "$WP_PATH/wp-content/plugins/pre-orders-wc"
+          if [ "$ORDER_STORAGE" = "hpos" ]; then
+            wp option update woocommerce_custom_orders_table_enabled yes --path="$WP_PATH"
+            wp option update woocommerce_custom_orders_table_data_sync_enabled no --path="$WP_PATH"
+          else
+            wp option update woocommerce_custom_orders_table_enabled no --path="$WP_PATH"
+          fi
+          wp plugin activate pre-orders-wc --path="$WP_PATH"
+
+      - name: Check syntax on the supported PHP runtime
+        run: find . -path './.git' -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Verify actual order storage
+        env:
+          ORDER_STORAGE: ${{ matrix.order_storage }}
+        run: |
+          wp --path="${{ runner.temp }}/wordpress" eval '
+          $enabled = \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+          if ( $enabled !== ( "hpos" === getenv( "ORDER_STORAGE" ) ) ) { WP_CLI::error( "Unexpected order storage mode." ); }
+          '
+
+      - name: Run Pre-Orders regression suite
+        env:
+          PO_TEST_PHP_BIN: php
+          PO_TEST_WP_CLI: wp
+          PO_TEST_WP_PATH: ${{ runner.temp }}/wordpress
+        run: bash tests/run-preorders-suite.sh
+
+  ci-gate:
+    name: ${{ needs.classify.outputs.full == 'true' && 'CI Gate' || 'Iteration Gate' }}
+    if: ${{ always() }}
+    needs: [classify, repository-contracts, quality, javascript, integration]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Require all applicable results
+        env:
+          CLASSIFY: ${{ needs.classify.result }}
+          CONTRACTS: ${{ needs.repository-contracts.result }}
+          QUALITY_REQUIRED: ${{ needs.classify.outputs.quality }}
+          JAVASCRIPT_REQUIRED: ${{ needs.classify.outputs.javascript }}
+          INTEGRATION_REQUIRED: ${{ needs.classify.outputs.integration }}
+          QUALITY: ${{ needs.quality.result }}
+          JAVASCRIPT: ${{ needs.javascript.result }}
+          INTEGRATION: ${{ needs.integration.result }}
+        run: bash bin/validate-ci-gate.sh
