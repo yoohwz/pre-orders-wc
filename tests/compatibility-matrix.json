@@ -1,0 +1,33 @@
+{
+  "minimums": {
+    "wordpress": "6.5",
+    "woocommerce": "8.0",
+    "php": "7.4"
+  },
+  "jobs": [
+    {
+      "wordpress": "6.5.5",
+      "woocommerce": "8.0.3",
+      "php": "7.4",
+      "order_storage": "legacy"
+    },
+    {
+      "wordpress": "6.6.2",
+      "woocommerce": "9.0.2",
+      "php": "8.0",
+      "order_storage": "hpos"
+    },
+    {
+      "wordpress": "6.8.3",
+      "woocommerce": "10.0.4",
+      "php": "8.2",
+      "order_storage": "hpos"
+    },
+    {
+      "wordpress": "7.0.2",
+      "woocommerce": "10.9.4",
+      "php": "8.4",
+      "order_storage": "hpos"
+    }
+  ]
+}
