@@ -46,7 +46,7 @@ class RoutingTests(unittest.TestCase):
                     self.assertTrue(result[check])
                 self.assertEqual(result['matrix']['include'], JOBS)
 
-    def test_advisory_checks_follow_final_candidate_changes(self):
+    def test_additional_checks_follow_final_candidate_changes(self):
         for path in ['css/frontend.css', 'inc/frontend/cart.php', 'js/orders.js']:
             with self.subTest(path=path):
                 self.assertFalse(self.route([path], True)['plugin_check'])
@@ -92,6 +92,7 @@ class GateTests(unittest.TestCase):
     def gate(self, **overrides):
         env = dict(os.environ, CLASSIFY='success', CONTRACTS='success',
                    QUALITY_REQUIRED='true', JAVASCRIPT_REQUIRED='true', INTEGRATION_REQUIRED='true',
+                   PLUGIN_CHECK_REQUIRED='true', PLUGIN_CHECK='success',
                    QUALITY='success', JAVASCRIPT='success', INTEGRATION='success')
         env.update(overrides)
         return subprocess.run(['bash', str(ROOT / 'bin/validate-ci-gate.sh')],
@@ -101,13 +102,13 @@ class GateTests(unittest.TestCase):
         self.assertEqual(self.gate(), 0)
 
     def test_every_required_failure_cancellation_skip_or_missing_fails(self):
-        for job in ['CLASSIFY', 'CONTRACTS', 'QUALITY', 'JAVASCRIPT', 'INTEGRATION']:
+        for job in ['CLASSIFY', 'CONTRACTS', 'QUALITY', 'JAVASCRIPT', 'INTEGRATION', 'PLUGIN_CHECK']:
             for result in ['failure', 'cancelled', 'skipped', '', 'unknown']:
                 with self.subTest(job=job, result=result):
                     self.assertNotEqual(self.gate(**{job: result}), 0)
 
     def test_only_irrelevant_jobs_may_skip(self):
-        for job in ['QUALITY', 'JAVASCRIPT', 'INTEGRATION']:
+        for job in ['QUALITY', 'JAVASCRIPT', 'INTEGRATION', 'PLUGIN_CHECK']:
             for result in ['success', 'skipped', 'failure', 'cancelled', '']:
                 with self.subTest(job=job, result=result):
                     code = self.gate(**{job + '_REQUIRED': 'false', job: result})
@@ -116,6 +117,32 @@ class GateTests(unittest.TestCase):
     def test_invalid_classifier_output_fails(self):
         for value in ['', 'unknown']:
             self.assertNotEqual(self.gate(QUALITY_REQUIRED=value), 0)
+
+
+class PluginCheckTests(unittest.TestCase):
+    def test_warning_baseline_accepts_only_known_capacity_and_no_errors(self):
+        baseline = ROOT / 'tests/ci/plugin-check-baseline.json'
+        known = json.loads(baseline.read_text())['fingerprints'][0]
+        path = known['path']
+        warning = {key: known[key] for key in ['code', 'message']}
+        warning.update(type='WARNING', line=999)
+        with tempfile.TemporaryDirectory() as directory:
+            result = Path(directory) / 'results.txt'
+            command = ['python3', str(ROOT / 'bin/validate-plugin-check.py'),
+                       '--baseline', str(baseline), '--results', str(result)]
+            cases = [
+                (path, [warning] * known['count'], 0),
+                (path, [warning] * (known['count'] + 1), 1),
+                ('other.php', [warning], 1),
+                (path, [dict(warning, type='ERROR')], 1),
+            ]
+            for filename, findings, expected in cases:
+                with self.subTest(filename=filename, findings=findings):
+                    result.write_text(f'FILE: {filename}\n{json.dumps(findings)}\n')
+                    self.assertEqual(subprocess.run(command, capture_output=True).returncode,
+                                     expected)
+            result.unlink()
+            self.assertEqual(subprocess.run(command, capture_output=True).returncode, 1)
 
 
 class RepositoryTests(unittest.TestCase):
@@ -177,10 +204,11 @@ class RepositoryTests(unittest.TestCase):
         self.assertIn('OrderUtil::custom_orders_table_usage_is_enabled()', blocks['integration'])
         self.assertIn('git diff --no-renames --name-only', blocks['classify'])
         self.assertIn('if: ${{ always() }}', blocks['ci-gate'])
-        self.assertIn('needs: [classify, repository-contracts, quality, javascript, integration]', blocks['ci-gate'])
+        self.assertIn('needs: [classify, repository-contracts, quality, javascript, integration, plugin-check]', blocks['ci-gate'])
         self.assertIn("github.event.pull_request.draft && 'Iteration Gate' || 'CI Gate'", blocks['ci-gate'])
         self.assertNotIn('needs.classify.outputs.full', blocks['ci-gate'])
         self.assertIn('rsync -a --exclude-from=.distignore', blocks['plugin-check'])
+        self.assertIn('--baseline tests/ci/plugin-check-baseline.json', blocks['plugin-check'])
         self.assertIn('uses: ./.github/workflows/compatibility-canary.yml', blocks['compatibility-canary'])
         canary = (ROOT / '.github/workflows/compatibility-canary.yml').read_text()
         for expected in ['schedule:', 'workflow_dispatch:', 'WP_VERSION: nightly',
@@ -188,7 +216,7 @@ class RepositoryTests(unittest.TestCase):
                          'bash tests/run-preorders-suite.sh',
                          'ref: ${{ github.event.pull_request.head.sha || github.sha }}']:
             self.assertIn(expected, canary)
-        for job in ['classify', 'repository-contracts', 'quality', 'javascript', 'integration']:
+        for job in ['classify', 'repository-contracts', 'quality', 'javascript', 'integration', 'plugin-check']:
             self.assertIn('${{ needs.' + job + '.result }}', blocks['ci-gate'])
         for event in ['ready_for_review', 'converted_to_draft']:
             self.assertIn(event, workflow)

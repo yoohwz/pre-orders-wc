@@ -59,8 +59,9 @@ There is no SM license bypass and no release/publishing step.
 
 Final CI runs the official WordPress Plugin Check action against the candidate
 staged with `.distignore`. The action publishes its findings and result artifact.
-This is advisory until Pre-Orders has a reviewed baseline. Stable WordPress
-version drift is tracked separately from Plugin Check's metadata diagnostics.
+Final CI rejects errors and new or increased warnings against the repository
+baseline. This baseline tracks existing diagnostics; it is not a security review.
+The canary checks WordPress drift separately from the published compatibility header.
 
 The compatibility canary runs the same integration suite with WordPress nightly,
 current WooCommerce, PHP 8.4 and verified HPOS on a disposable site. GitHub runs

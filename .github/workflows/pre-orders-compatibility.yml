@@ -174,7 +174,7 @@ jobs:
         run: bash tests/run-preorders-suite.sh
 
   plugin-check:
-    name: WordPress Plugin Check (advisory)
+    name: WordPress Plugin Check
     needs: classify
     if: ${{ needs.classify.outputs.plugin_check == 'true' }}
     runs-on: ubuntu-latest
@@ -195,7 +195,13 @@ jobs:
         with:
           build-dir: ${{ runner.temp }}/package/pre-orders-wc
           slug: pre-orders-wc
+          repo-token: ''
           ignore-codes: outdated_tested_upto_header
+      - name: Enforce Plugin Check warning baseline
+        run: |
+          python3 bin/validate-plugin-check.py \
+            --results "$RUNNER_TEMP/plugin-check-results.txt" \
+            --baseline tests/ci/plugin-check-baseline.json
 
   compatibility-canary:
     name: Validate compatibility canary changes
@@ -206,7 +212,7 @@ jobs:
   ci-gate:
     name: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft && 'Iteration Gate' || 'CI Gate' }}
     if: ${{ always() }}
-    needs: [classify, repository-contracts, quality, javascript, integration]
+    needs: [classify, repository-contracts, quality, javascript, integration, plugin-check]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -221,7 +227,9 @@ jobs:
           QUALITY_REQUIRED: ${{ needs.classify.outputs.quality }}
           JAVASCRIPT_REQUIRED: ${{ needs.classify.outputs.javascript }}
           INTEGRATION_REQUIRED: ${{ needs.classify.outputs.integration }}
+          PLUGIN_CHECK_REQUIRED: ${{ needs.classify.outputs.plugin_check }}
           QUALITY: ${{ needs.quality.result }}
           JAVASCRIPT: ${{ needs.javascript.result }}
           INTEGRATION: ${{ needs.integration.result }}
+          PLUGIN_CHECK: ${{ needs.plugin-check.result }}
         run: bash bin/validate-ci-gate.sh

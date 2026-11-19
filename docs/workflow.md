@@ -39,7 +39,7 @@ pushes do not duplicate PR runs.
 | Mode | Always | When applicable | Aggregate signal |
 | --- | --- | --- | --- |
 | Draft / Iteration | CI/repository contracts, diff hygiene | PHP syntax/source contracts, JS syntax, one representative runtime environment | `Iteration Gate` |
-| Ready PR / main / manual / Final | CI/repository contracts, diff hygiene | PHP syntax/source contracts, JS syntax, all compatibility environments | `CI Gate` |
+| Ready PR / main / manual / Final | CI/repository contracts, diff hygiene | PHP syntax/source contracts, JS syntax, all compatibility environments, WordPress Plugin Check | `CI Gate` |
 
 `tests/compatibility-matrix.json` is the single source of environments. Draft runtime
 work uses PHP 8.2 with HPOS; Final runtime work runs all four environments. Each
@@ -55,7 +55,8 @@ as the required signal when configuring branch protection for `main`.
 No mutable WordPress/database test-state cache is used.
 
 Final distributable or CI-control changes also run WordPress Plugin Check.
-Its findings are advisory during adoption, with results attached to the run.
+The baseline records existing warnings by path, code and message. Final CI fails
+on any error or new/increased warning, with raw results attached to the run.
 The weekly nightly WordPress canary is independent of the supported matrix and
 merge gate. Final CI also exercises the canary when its workflow or shared
 WordPress setup changes.
