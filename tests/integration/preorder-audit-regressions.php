@@ -325,7 +325,6 @@ try {
 	$draft->save();
 	$checkout->update_order_from_cart( $draft );
 	do_action( 'woocommerce_store_api_checkout_update_order_meta', $draft );
-	$draft->save();
 	yoohw_po_audit_assert( [] === yoohw_pre_orders_wc_get_tracked_product_ids( wc_get_order( $draft->get_id() ) ), 'An older Blocks draft kept stale tracking when its cart hash was unchanged.' );
 	$cart->add_to_cart( $preorder_id, 1 );
 	$checkout->update_order_from_cart( $draft );

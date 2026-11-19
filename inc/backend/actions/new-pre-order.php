@@ -33,7 +33,15 @@ class YoOhw_Pre_Orders_WC_New_Pre_Order {
 			}
 		}
 
-		$this->set_preorders( $order, $tracked_ids );
+		$tracked_ids = array_values( array_unique( $tracked_ids ) );
+		$mark        = $tracked_ids ? '1' : '';
+		if ( $tracked_ids !== $previous_ids || $mark !== (string) $order->get_meta( '_pre_order_marked', true ) ) {
+			$this->set_preorders( $order, $tracked_ids );
+			// Store API GET can return the draft without saving it again.
+			if ( $order->get_id() ) {
+				$order->save_meta_data();
+			}
+		}
 	}
 
 	public function update_pre_order_meta( $item, $cart_item_key, $values, $order ) {
