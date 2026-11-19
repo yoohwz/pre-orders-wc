@@ -3,7 +3,7 @@
  * Plugin Name: Pre-Orders for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/pre-orders-wc/
  * Description: Add pre-order stock status, availability dates, and customer delivery preferences to WooCommerce products.
- * Version: 1.3.0
+ * Version: 1.4.0
  * Author: YoOhw.com
  * Author URI: https://yoohw.com
  * Requires at least: 6.5

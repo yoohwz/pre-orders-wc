@@ -1,5 +1,16 @@
 === Pre-Orders for WooCommerce ===
 
+= 1.4.0 (November 19, 2026) =
+* New: Filter WooCommerce Orders by historical preorder status in HPOS and legacy storage, including mixed orders.
+* New: Compare checkout stock status and expected dates with current product information on the order screen.
+* New: Confirm availability manually for a product or variation, or use automatic completion on the expected date.
+* New: Exclude selected payment methods for preorder carts in Classic and Blocks checkout.
+* Fix: Enforce preorder quantity limits during cart updates and checkout.
+* Fix: Cancel stale availability schedules, save dates through the standard variation editor, and keep preorder-only variable products visible.
+* Fix: Keep checkout snapshots and draft tracking accurate as catalog and cart contents change.
+* Fix: Record the actual notification outcome and retry failed availability notifications.
+* Improve: Preserve delay-notification history across Free and Stock Manager upgrades.
+
 = 1.3.0 (July 18, 2026) =
 * New: Added a paginated Preorder overview with operational metrics, schedule filters, product search, open-order demand, and customer-update counts.
 * New: Added maximum preorder quantity per order for simple products and variations, including parent inheritance.
