@@ -94,6 +94,12 @@ try {
 	$overview = new YoOhw_Pre_Orders_WC_Overview();
 	$notify   = new ReflectionMethod( $overview, 'send_delay_notifications' );
 	$notify->setAccessible( true );
+	$preorder_item->update_meta_data( '_wcess_delay_notice_date', $new_date );
+	$preorder_item->save_meta_data();
+	$premium_repeat = $notify->invoke( $overview, $preorder );
+	yoohw_preorders_test_assert( 0 === $premium_repeat['sent'], 'Free resent a date already notified by Stock Manager.' );
+	$preorder_item->delete_meta_data( '_wcess_delay_notice_date' );
+	$preorder_item->save_meta_data();
 	$result = $notify->invoke( $overview, $preorder );
 	$repeat_result = $notify->invoke( $overview, $preorder );
 	remove_filter( 'pre_wp_mail', $mail_filter, 10 );
@@ -103,6 +109,7 @@ try {
 
 	$preorder_item = wc_get_order( $order->get_id() )->get_item( $preorder_item_id );
 	yoohw_preorders_test_assert( $new_date === $preorder_item->get_meta( YoOhw_Pre_Orders_WC_Overview::DELAY_ITEM_META, true ), 'Delay-notification deduplication marker was not saved.' );
+	yoohw_preorders_test_assert( $new_date === $preorder_item->get_meta( '_wcess_delay_notice_date', true ), 'The Stock Manager delay-notification marker was not saved.' );
 
 	yoohw_pre_orders_wc_update_product_available_date( $preorder->get_id(), wp_date( 'Y-m-d\TH:i', time() - 2 * MINUTE_IN_SECONDS, wp_timezone() ) );
 	$auto_update = new YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock();

@@ -183,7 +183,28 @@ try {
 	$order = wc_get_order( $order->get_id() );
 	yoohw_po_operations_assert( 2 === count( $messages ), 'Completion or retry sent duplicate customer notifications.' );
 	yoohw_po_operations_assert( [] === yoohw_pre_orders_wc_get_tracked_product_ids( $order ) && '1' === $order->get_meta( '_pre_order_marked' ), 'A completed legacy order lost its permanent preorder marker.' );
+	$legacy_line = current( $order->get_items() );
+	yoohw_po_operations_assert( 'onpreorder' === $legacy_line->get_meta( '_wcess_stock_status' ) && ! $legacy_line->meta_exists( '_wcess_available_date' ), 'Completion lost verified legacy line status or invented a checkout date.' );
+	yoohw_po_operations_assert( 'yoohw-only-preorder' === YoOhw_Pre_Orders_WC_Orders::get_order_class( $order ), 'Legacy preorder-only badge changed after completion.' );
 	yoohw_po_operations_assert( 'pending' === $order->get_status(), 'Completion modified the order status.' );
+
+	$products[] = $interrupted = yoohw_po_operations_product( 'PO interrupted notification', 'onpreorder' );
+	$order = yoohw_po_operations_order( $interrupted );
+	$orders[ $order->get_id() ] = $order;
+	$interrupt_mail = static function () {
+		throw new RuntimeException( 'Fixture interruption before mail delivery.' );
+	};
+	add_filter( 'pre_wp_mail', $interrupt_mail, 20 );
+	try {
+		yoohw_po_operations_assert( true === $scheduler::confirm_available( $interrupted->get_id() ), 'A mail interruption prevented reporting the committed stock transition.' );
+	} finally {
+		remove_filter( 'pre_wp_mail', $interrupt_mail, 20 );
+	}
+	$interrupted_args = [ $interrupted->get_id(), true ];
+	yoohw_po_operations_assert( wp_next_scheduled( $stock_hook, $interrupted_args ) && [ $interrupted->get_id() ] === yoohw_pre_orders_wc_get_tracked_product_ids( wc_get_order( $order->get_id() ) ), 'An interrupted mail pass had no pending recovery.' );
+	wp_clear_scheduled_hook( $stock_hook, $interrupted_args );
+	do_action( $stock_hook, ...$interrupted_args );
+	yoohw_po_operations_assert( [] === yoohw_pre_orders_wc_get_tracked_product_ids( wc_get_order( $order->get_id() ) ), 'Recovery did not finish the interrupted order tracking.' );
 
 	$products[] = $parent = new WC_Product_Variable();
 	$parent->set_name( 'PO variable parent' );
@@ -225,6 +246,26 @@ try {
 	do_action( $stock_hook, $dated->get_id() );
 	yoohw_po_operations_assert( 'onpreorder' === wc_get_product( $future->get_id() )->get_stock_status() && 'instock' === wc_get_product( $dated->get_id() )->get_stock_status(), 'Automatic mode did not distinguish upcoming from overdue dates.' );
 
+	$products[] = $moved = yoohw_po_operations_product( 'PO date moved during reminder', 'onpreorder' );
+	$moved_id = $moved->get_id();
+	$moved_to = wp_date( 'Y-m-d\TH:i', time() + DAY_IN_SECONDS );
+	update_option( 'yoess_pre_order_email_to_admin', 'yes' );
+	update_option( 'yoess_pre_order_email_to_admin_timer', 0 );
+	yoohw_pre_orders_wc_update_product_available_date( $moved_id, wp_date( 'Y-m-d\TH:i', time() - 2 * MINUTE_IN_SECONDS ) );
+	wp_schedule_single_event( time() - MINUTE_IN_SECONDS, $reminder_hook, [ $moved_id ] );
+	$move_during_mail = static function ( $result ) use ( $scheduler, $moved_id, $moved_to ) {
+		yoohw_pre_orders_wc_update_product_available_date( $moved_id, $moved_to );
+		$scheduler::schedule_event_for_product( $moved_id );
+		return $result;
+	};
+	add_filter( 'pre_wp_mail', $move_during_mail, 20 );
+	try {
+		do_action( $stock_hook, $moved_id );
+	} finally {
+		remove_filter( 'pre_wp_mail', $move_during_mail, 20 );
+	}
+	yoohw_po_operations_assert( 'onpreorder' === wc_get_product( $moved_id )->get_stock_status() && $moved_to === yoohw_pre_orders_wc_get_product_available_date( $moved_id ), 'An in-flight reminder allowed the old cron to finish a postponed preorder.' );
+
 	wc_load_cart();
 	$cart = WC()->cart;
 	$products[] = $regular = yoohw_po_operations_product( 'PO ordinary cart line', 'instock' );
@@ -263,6 +304,31 @@ try {
 	yoohw_po_operations_assert( 200 === $response->get_status() && [ 'cheque' ] === ( $response->get_data()['payment_methods'] ?? null ), 'Blocks cart did not advertise the filtered payment methods.' );
 	$response = yoohw_po_operations_store_response( 'POST', 'checkout', $checkout );
 	yoohw_po_operations_assert( 400 === $response->get_status() && 'woocommerce_rest_checkout_payment_method_disabled' === ( $response->get_data()['code'] ?? null ), 'Blocks checkout did not reject the excluded method on the server: ' . wp_json_encode( $response->get_data() ) );
+
+	$existing_checkout_route = array_filter( array_keys( rest_get_server()->get_routes() ), static function ( $route ) {
+		return 0 === strpos( $route, '/wc/store/v1/checkout/(?P<id>' );
+	} );
+	if ( $existing_checkout_route ) {
+		$existing_order = wc_create_order( [ 'customer_id' => get_current_user_id() ] );
+		$orders[ $existing_order->get_id() ] = $existing_order;
+		$existing_order->add_product( $regular );
+		$existing_order->set_billing_address( $billing );
+		$existing_order->calculate_totals();
+		$existing_order->save();
+		$existing_payment = $checkout + [
+			'key'              => $existing_order->get_order_key(),
+			'shipping_address' => array_diff_key( $billing, [ 'email' => true ] ),
+		];
+		$existing_response = yoohw_po_operations_store_response( 'POST', 'checkout/' . $existing_order->get_id(), $existing_payment );
+		yoohw_po_operations_assert( 200 === $existing_response->get_status() && 'bacs' === wc_get_order( $existing_order->get_id() )->get_payment_method(), 'Existing-order payment was blocked by the unrelated preorder cart: ' . wp_json_encode( $existing_response->get_data() ) );
+		// The core bank transfer gateway empties the cart when it accepts an order.
+		$cart = WC()->cart;
+		if ( ! $cart->get_cart_item( $preorder_key ) ) {
+			$cart->add_to_cart( $regular->get_id() );
+			$preorder_key = $cart->add_to_cart( $parent->get_id(), 1, $variation->get_id(), [ 'attribute_size' => 'Large' ] );
+		}
+		yoohw_po_operations_assert( [ 'cheque' ] === array_keys( WC()->payment_gateways()->get_available_payment_gateways() ), 'Existing-order payment left exclusions disabled for the cart.' );
+	}
 
 	update_option( $payments, $gateways );
 	yoohw_po_operations_assert( [] === WC()->payment_gateways()->get_available_payment_gateways(), 'Checkout silently restored an excluded gateway.' );

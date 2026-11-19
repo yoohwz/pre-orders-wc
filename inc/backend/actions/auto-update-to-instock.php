@@ -123,15 +123,8 @@ class YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock {
 				if (!self::can_confirm($product)) {
 					return new WP_Error('preorder_confirmation_unavailable', __('This preorder can no longer be confirmed. Check the completion mode and product status.', 'pre-orders-wc'));
 				}
-			} else {
-				$date = yoohw_pre_orders_wc_parse_available_date(yoohw_pre_orders_wc_get_product_available_date($product));
-				if (self::is_manual() || 'onpreorder' !== $product->get_stock_status() || !$date || $date->getTimestamp() > time()) {
-					return false;
-				}
-			}
-
-			if ($product->get_manage_stock() && (int) $product->get_stock_quantity() <= absint(get_option('woocommerce_notify_no_stock_amount', 0))) {
-				return new WP_Error('preorder_stock_insufficient', __('Add stock in WooCommerce before confirming this preorder.', 'pre-orders-wc'));
+			} elseif (!self::is_due($product)) {
+				return false;
 			}
 
 			return self::complete_product($product, $manual);
@@ -139,6 +132,14 @@ class YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Release this connection's lock even on failure.
 			$wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)', $lock));
 		}
+	}
+
+	private static function is_due($product) {
+		if (self::is_manual() || !$product || 'onpreorder' !== $product->get_stock_status()) {
+			return false;
+		}
+		$date = yoohw_pre_orders_wc_parse_available_date(yoohw_pre_orders_wc_get_product_available_date($product));
+		return $date && $date->getTimestamp() <= time();
 	}
 
 	private static function complete_product($product, $manual) {
@@ -149,6 +150,27 @@ class YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock {
 		if (!$manual && $reminder_time && $reminder_time <= time() && 0 === absint(get_option('yoess_pre_order_email_to_admin_timer', 3))) {
 			wp_clear_scheduled_hook($reminder_hook, array($product_id));
 			YoOhw_Pre_Orders_WC_Email_Available_Product_Admin::notify_admin_preorder_availability_handler($product_id);
+			// A mail transport or hook can run while an administrator changes the schedule.
+			wp_cache_delete($product_id, 'post_meta');
+			wp_cache_delete('alloptions', 'options');
+			wp_cache_delete(self::MODE_OPTION, 'options');
+			$product = wc_get_product($product_id);
+			if (!self::is_due($product)) {
+				return false;
+			}
+		}
+
+		if ($product->get_manage_stock() && (int) $product->get_stock_quantity() <= absint(get_option('woocommerce_notify_no_stock_amount', 0))) {
+			return new WP_Error('preorder_stock_insufficient', __('WooCommerce stock rules prevent confirming this preorder as in stock.', 'pre-orders-wc'));
+		}
+
+		$retry_args = array($product_id, true);
+		$stock_hook = 'wc_pre_orders_update_stock_status';
+		// Arm recovery before committing the status, so an interrupted mail loop can resume.
+		if (!wp_next_scheduled($stock_hook, $retry_args) &&
+			!wp_schedule_single_event(time() + 10 * MINUTE_IN_SECONDS, $stock_hook, $retry_args)
+		) {
+			return new WP_Error('preorder_recovery_not_scheduled', __('The preorder could not be completed because its notification retry could not be scheduled.', 'pre-orders-wc'));
 		}
 
 		$product->set_stock_status('instock');
@@ -168,9 +190,15 @@ class YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock {
 			WC_Product_Variable::sync_stock_status($parent_id);
 		}
 
-		$retry_args = array($product_id, true);
-		if (self::update_orders_with_pre_order_items($product_id) && !wp_next_scheduled('wc_pre_orders_update_stock_status', $retry_args)) {
-			wp_schedule_single_event(time() + 10 * MINUTE_IN_SECONDS, 'wc_pre_orders_update_stock_status', $retry_args);
+		try {
+			if (!self::update_orders_with_pre_order_items($product_id)) {
+				wp_clear_scheduled_hook($stock_hook, $retry_args);
+			}
+		} catch (Throwable $exception) {
+			wc_get_logger()->warning(
+				'Preorder notification processing was interrupted. The scheduled retry remains active.',
+				array('source' => 'pre-orders-wc', 'product_id' => $product_id)
+			);
 		}
 		if (!$manual) {
 			do_action('yoohw_pre_orders_wc_auto_updated_to_instock', $product_id);
@@ -218,7 +246,11 @@ class YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock {
 			foreach ($order->get_items() as $item) {
 				if ((int) $item->get_product_id() === (int) $product_id || (int) $item->get_variation_id() === (int) $product_id) {
 					$has_product = true;
-					break;
+					$item_product_id = $item->get_variation_id() ?: $item->get_product_id();
+					if ((int) $item_product_id === (int) $product_id && !$item->meta_exists('_wcess_stock_status')) {
+						$item->add_meta_data('_wcess_stock_status', 'onpreorder', true);
+						$item->save_meta_data();
+					}
 				}
 			}
 
