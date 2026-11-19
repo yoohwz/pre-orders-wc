@@ -41,6 +41,7 @@ class YoOhw_Pre_Orders_WC_Frontend {
 		include_once plugin_dir_path(__FILE__) . '../frontend/order-table.php';
 		include_once plugin_dir_path(__FILE__) . '../frontend/customer-actions.php';
 		include_once plugin_dir_path(__FILE__) . '../frontend/customer-actions-blocks.php';
+		include_once plugin_dir_path(__FILE__) . '../frontend/payment-methods.php';
 	}
 }
 

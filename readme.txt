@@ -37,8 +37,9 @@ The plugin is built for stores that need a simple WooCommerce preorder workflow 
 * **Customer availability email** - Send an email when preorder products become available.
 * **Delay notification** - Find affected open orders and send a WooCommerce-styled email when an expected date moves later.
 * **Admin availability reminder** - Notify the store administrator before a preorder product reaches its available date.
-* **Automatic stock update** - Change products from `On preorder` to `In stock` when the available date is reached.
-* **Stable order history** - Preserve each preorder item's status and expected date on the order, even after the product changes later.
+* **Automatic or manual completion** - End a preorder on its expected date or confirm availability for a product or variation.
+* **Stable order history and order filters** - Find orders with or without preorder items and compare checkout snapshots with current product details.
+* **Payment method exclusions** - Choose which WooCommerce payment methods to exclude whenever the cart contains a preorder item.
 * **HPOS and Blocks ready** - Declares compatibility with WooCommerce HPOS and Cart/Checkout Blocks.
 
 == Why Use Pre-Orders for WooCommerce? ==
@@ -52,7 +53,7 @@ This plugin focuses on the core preorder experience:
 * Control the maximum preorder quantity allowed in each order.
 * Keep preorder details visible in carts, checkout, orders, and emails.
 * Notify customers and administrators at the right time.
-* Automatically return products to normal in-stock status when they become available.
+* Choose when preorder products return to normal in-stock status.
 
 == Preorder Operations ==
 
@@ -65,6 +66,12 @@ Use **Products > Pre-orders** to manage day-to-day preorder activity without ope
 * Review affected orders before sending a delay notification.
 * Send WooCommerce-styled customer updates without sending the same update repeatedly for the same date.
 
+In **WooCommerce > Orders**, use the preorder filter to find historical preorder orders, including mixed orders and orders whose products are already available. In the order details, compare **At checkout** with **Current product**. Older orders can show an unknown checkout value when there is no surviving record.
+
+In **WooCommerce > Settings > Products > Pre-orders**, choose **Preorder completion**. **Automatically on the expected date** is the default and uses WordPress cron. **Confirm availability manually** lets you select **Confirm available** in **Products > Pre-orders**, even when the product has no expected date. Dates and administrator reminders remain active in manual mode. Returning to automatic mode schedules current dated preorders again, including dates that are already due. Completion changes the product stock status and can notify customers according to your WooCommerce email settings. Manage quantities and order fulfillment separately in WooCommerce.
+
+Use **Exclude payment methods for preorders** in the same settings section to select gateways. The restriction applies to the whole cart when it contains any preorder item, in both Classic and Blocks checkout. A blank selection uses normal WooCommerce availability. If a payable cart has no available method, the customer must remove the preorder items or contact the store.
+
 == How It Works ==
 
 1. Edit a WooCommerce product or variation.
@@ -75,7 +82,7 @@ Use **Products > Pre-orders** to manage day-to-day preorder activity without ope
 6. Customers see preorder labels, availability dates, and preorder button text on the storefront.
 7. Mixed carts can collect the customer's delivery preference in classic or block checkout.
 8. Use **Products > Pre-orders** to monitor demand, deadlines, and customer date updates.
-9. When the date arrives, the plugin can automatically update the product to `In stock` and notify customers.
+9. Let the expected date trigger completion, or confirm availability yourself in manual mode.
 
 == External Services ==
 
@@ -118,7 +125,7 @@ Yes. The availability date can appear on product pages, product lists, cart, che
 
 = What happens when the preorder date arrives? =
 
-The plugin can automatically update the product stock status from `On preorder` to `In stock` on the available date.
+With the default automatic mode, the product moves from `On preorder` to `In stock` when the scheduled job runs. In manual mode, use **Confirm available** when the product is ready.
 
 = Does this plugin send preorder email notifications? =
 
@@ -140,9 +147,9 @@ Open **Products > Pre-orders** to see active preorder products, open-order count
 
 Yes. The Preorder overview identifies affected open orders when a product's current expected date is later than the date captured at checkout. You can review the count and send a WooCommerce-styled update without repeatedly emailing the same order for the same date.
 
-= Does this plugin process preorder payments separately? =
+= Can I restrict payment methods for preorder carts? =
 
-No. Payments are handled by WooCommerce and your active WooCommerce payment gateways. This plugin adds preorder stock status, availability display, customer choices, and notifications.
+Yes. Choose the excluded gateways in **WooCommerce > Settings > Products > Pre-orders**. The remaining methods follow WooCommerce availability and process payment for the entire order.
 
 = Can I customize the preorder button text? =
 
@@ -158,7 +165,7 @@ Yes. Versioned migrations retain existing product dates, settings, and order dat
 
 = Is there a Pro add-on for advanced preorder management? =
 
-The free plugin includes a complete product-level preorder workflow. WooCommerce Stock Manager adds operational inventory workflows such as restock batches and receiving, inventory movements, suppliers, purchase orders, reorder suggestions, allocation, fulfillment readiness, reports, and multi-location stock. Existing free-product dates and preorder order data remain compatible when upgrading.
+The free plugin covers product-level preorders, order history, and customer communication. WooCommerce Stock Manager adds restock batches and receiving, inventory movements, suppliers, purchase orders, reorder suggestions, allocation, fulfillment readiness, reports, and multi-location stock. During a supported upgrade, Stock Manager preserves Free order data and can import gateway exclusions if Stock Manager has no saved exclusions. Review Stock Manager's completion policy after upgrading. Its default follows stock receipts, and its manual setting also applies to backorders.
 
 == Changelog ==
 
