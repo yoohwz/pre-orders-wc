@@ -58,7 +58,7 @@ There is no SM license bypass and no release/publishing step.
 ## Additional compatibility signals
 
 Final CI runs the official WordPress Plugin Check action against the candidate
-staged with `.distignore`. The action publishes its findings and result artifact.
+staged by the release builder from `release/payload-manifest.txt`. The action publishes its findings and result artifact.
 Final CI rejects errors and new or increased warnings against the repository
 baseline. This baseline tracks existing diagnostics; it is not a security review.
 The canary checks WordPress drift separately from the published compatibility header.

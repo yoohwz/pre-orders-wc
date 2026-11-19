@@ -18,8 +18,9 @@ $overview      = file_get_contents( $root . '/inc/backend/preorder-overview.php'
 $blocks        = file_get_contents( $root . '/inc/frontend/customer-actions-blocks.php' );
 $readme        = file_get_contents( $root . '/readme.txt' );
 
-yoohw_preorders_source_assert( false !== strpos( $main, 'Version: 1.3.0' ), 'Plugin version is not 1.3.0.' );
-yoohw_preorders_source_assert( false !== strpos( $readme, 'Stable tag: 1.3.0' ), 'Readme stable tag is not 1.3.0.' );
+yoohw_preorders_source_assert( 1 === preg_match( '/^\h*\*\h*Version:\h*([0-9]+(?:\.[0-9]+){1,2})\h*$/m', $main, $plugin_version ), 'Plugin Version header is missing or invalid.' );
+yoohw_preorders_source_assert( 1 === preg_match( '/^Stable tag:\h*([^\s]+)\h*$/m', $readme, $stable_tag ), 'Readme Stable tag is missing.' );
+yoohw_preorders_source_assert( $plugin_version[1] === $stable_tag[1], 'Plugin Version and readme Stable tag differ.' );
 yoohw_preorders_source_assert( false !== strpos( $main, "declare_compatibility('custom_order_tables'" ), 'HPOS compatibility is not declared.' );
 yoohw_preorders_source_assert( false !== strpos( $main, "declare_compatibility('cart_checkout_blocks'" ), 'Cart/Checkout Blocks compatibility is not declared.' );
 yoohw_preorders_source_assert( false !== strpos( $compatibility, '_pre_order_available_date' ) && false !== strpos( $compatibility, '_extended_status_available_date' ), 'Free and Stock Manager date compatibility is incomplete.' );

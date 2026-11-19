@@ -38,7 +38,7 @@ class RoutingTests(unittest.TestCase):
                 self.assertFalse(result[check])
 
     def test_control_plane_self_tests_final_graph(self):
-        for path in ci.CONTROL_PLANE | {'.github/workflows/other.yml', 'bin/new-helper.py'}:
+        for path in ci.CONTROL_PLANE | {'.github/workflows/other.yml', 'bin/new-helper.py', 'release/payload-manifest.txt'}:
             with self.subTest(path=path):
                 result = self.route([path])
                 self.assertTrue(result['control_plane'])
@@ -207,7 +207,7 @@ class RepositoryTests(unittest.TestCase):
         self.assertIn('needs: [classify, repository-contracts, quality, javascript, integration, plugin-check]', blocks['ci-gate'])
         self.assertIn("github.event.pull_request.draft && 'Iteration Gate' || 'CI Gate'", blocks['ci-gate'])
         self.assertNotIn('needs.classify.outputs.full', blocks['ci-gate'])
-        self.assertIn('rsync -a --exclude-from=.distignore', blocks['plugin-check'])
+        self.assertIn('bash bin/build-release.sh', blocks['plugin-check'])
         self.assertIn('--baseline tests/ci/plugin-check-baseline.json', blocks['plugin-check'])
         self.assertIn('uses: ./.github/workflows/compatibility-canary.yml', blocks['compatibility-canary'])
         canary = (ROOT / '.github/workflows/compatibility-canary.yml').read_text()
@@ -227,7 +227,7 @@ class RepositoryTests(unittest.TestCase):
 
     def test_development_files_excluded_from_distribution(self):
         patterns = (ROOT / '.distignore').read_text().splitlines()
-        for path in ['.github', 'AGENTS.md', 'docs', 'bin', 'tests']:
+        for path in ['.github', 'AGENTS.md', 'docs', 'bin', 'tests', 'release']:
             self.assertIn(path, patterns)
 
 
