@@ -151,7 +151,7 @@ class YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock {
 			wp_clear_scheduled_hook($reminder_hook, array($product_id));
 			YoOhw_Pre_Orders_WC_Email_Available_Product_Admin::notify_admin_preorder_availability_handler($product_id);
 			// A mail transport or hook can run while an administrator changes the schedule.
-			wp_cache_delete($product_id, 'post_meta');
+			clean_post_cache($product_id);
 			wp_cache_delete('alloptions', 'options');
 			wp_cache_delete(self::MODE_OPTION, 'options');
 			$product = wc_get_product($product_id);
