@@ -1,8 +1,9 @@
 # Pre-Orders for WooCommerce — repository instructions
 
 Read `docs/workflow.md` before writes or reviews and `docs/testing.md` before validation.
-This repository maintains its own adaptation of Stock Manager's workflow; it does
-not import live instructions or CI code from another repository.
+This repository owns its workflow. Use Thumbnail Manager as the reference for
+engineering and CI, and use the local Pre-Orders contracts for product behavior
+and compatibility.
 
 ## Ownership and execution
 
@@ -48,6 +49,9 @@ not import live instructions or CI code from another repository.
 - Supply bounded subagents with scope, inputs and required outputs when useful.
   Prefer one writer per file and isolated test state. An implementer cannot provide
   independent approval of its own work. Main integrates and verifies the result.
+- Default delegated work to the available GPT-6.2 Sol model. Use GPT-6.2 Astra
+  only for a bounded engineering question or review where deeper reasoning is
+  justified. Fresh context and a separate checkout establish review independence.
 - Record reviewer, reviewed SHA, findings and corrections on the PR. Changed heads
   need affected checks and delta review. Optional cleanup/style does not block.
   If required independent review is unavailable, report the gap without claiming

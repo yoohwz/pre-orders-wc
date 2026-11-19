@@ -1,11 +1,10 @@
 # Pre-Orders — Codex-owned engineering workflow
 
-This is the canonical workflow for `yoohwz/pre-orders-wc`. It adapts Stock Manager's
-`AGENTS.md`, `docs/workflow.md` and Iteration/Final CI from
-`yoohwz/wc-extented-stock-status` at commit
-`d21f40a595d4203aa789355c4d43bd4f5dd226fd`.
-The two workflows are independent: later SM changes do not automatically update PO.
-`AGENTS.md` contains the operating rules; `docs/testing.md` defines actual coverage.
+This is the canonical workflow for `yoohwz/pre-orders-wc`. Its engineering and CI
+reference is Thumbnail Manager at `b4b2de10cd058fa2e63322b2a1a73d5245391209`.
+It builds on the Pre-Orders CI runner and compatibility coverage introduced in
+PR #1. Each repository owns its workflow and changes independently.
+`AGENTS.md` contains the operating rules and `docs/testing.md` defines coverage.
 
 ## Execution and authority
 
@@ -49,15 +48,22 @@ order-storage mode. Ordinary governance-only edits stay cheap. Unknown paths and
 empty change sets select runtime checks; Final CI-control changes and manual
 dispatch exercise the complete supported graph.
 
-Required failed, cancelled, skipped or missing jobs fail the gate. Irrelevant jobs
-may skip. `Iteration Gate` never substitutes for Final CI. `CI Gate` is intended
-for branch protection; adopting this workflow does not change GitHub protections.
+Required failed, cancelled, skipped or missing jobs fail the gate. GitHub event
+state selects the gate name independently of classifier success. A classifier
+failure on a ready PR therefore fails `CI Gate`. Use GitHub Actions' `CI Gate`
+as the required signal when configuring branch protection for `main`.
 No mutable WordPress/database test-state cache is used.
+
+Final distributable or CI-control changes also run WordPress Plugin Check.
+Its findings are advisory during adoption, with results attached to the run.
+The weekly nightly WordPress canary is independent of the supported matrix and
+merge gate. Final CI also exercises the canary when its workflow or shared
+WordPress setup changes.
 
 PO has no Composer/PHPCS/PHPCompatibility stack, JS behavior suite or automated
 WordPress.org publisher in this adoption. Syntax and source checks are not claimed
-as those tools or as browser evidence. No SM license stub, inventory suite or
-premium-plugin checkout is imported.
+as those tools or as browser evidence. Hosted tests use public WordPress and
+WooCommerce packages and the Pre-Orders suite.
 
 ## Handoff and release
 
@@ -69,8 +75,8 @@ review and overlap with a moved base. Use `NOT RUN — reason` for unavailable c
 
 Only `HUMAN_DECISION_REQUIRED` and `READY_FOR_HUMAN_MERGE` are Human handoff states.
 Normal engineering continues inside Codex without Human relays or internal phase
-approvals. Prior decisions/findings remain valid where applicable; do not invent
-historical approvals or import SM's historical release discrepancies into PO.
+approvals. Prior decisions and findings remain applicable to the reviewed scope
+and candidate.
 
 Workflow adoption changes no runtime code, identity, version or release metadata.
 Merge does not authorize packaging, tags, publication, deployment or rollback.

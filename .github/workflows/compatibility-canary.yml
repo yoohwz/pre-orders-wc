@@ -1,0 +1,62 @@
+name: Pre-Orders Compatibility Canary
+
+on:
+  schedule:
+    - cron: '17 2 * * 1'
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pre-orders-canary-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  wordpress-nightly:
+    name: WordPress nightly / current WooCommerce / PHP 8.4 / HPOS
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: wordpress
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.4'
+          extensions: mysqli
+          tools: wp-cli
+          coverage: none
+      - name: Install nightly WordPress and current WooCommerce
+        env:
+          WP_VERSION: nightly
+          WC_VERSION: latest
+          ORDER_STORAGE: hpos
+        run: bash bin/setup-ci-wordpress.sh
+      - name: Verify HPOS and run Pre-Orders regression suite
+        env:
+          PO_TEST_PHP_BIN: php
+          PO_TEST_WP_CLI: wp
+          PO_TEST_WP_PATH: ${{ runner.temp }}/wordpress
+        run: |
+          wp --path="$PO_TEST_WP_PATH" eval '
+          if ( ! \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+            WP_CLI::error( "HPOS is not active." );
+          }
+          '
+          bash tests/run-preorders-suite.sh

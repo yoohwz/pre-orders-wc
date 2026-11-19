@@ -21,13 +21,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      full: ${{ steps.select.outputs.full }}
       quality: ${{ steps.select.outputs.quality }}
       javascript: ${{ steps.select.outputs.javascript }}
       integration: ${{ steps.select.outputs.integration }}
       matrix: ${{ steps.select.outputs.matrix }}
+      plugin_check: ${{ steps.select.outputs.plugin_check }}
+      canary: ${{ steps.select.outputs.canary }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
@@ -53,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
@@ -78,11 +79,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: '8.4'
           coverage: none
@@ -98,11 +99,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
       - name: JavaScript syntax
@@ -133,13 +134,13 @@ jobs:
 
     steps:
       - name: Check out Pre-Orders
-        uses: actions/checkout@v5
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
       - name: Set up PHP and WP-CLI
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: ${{ matrix.php }}
           extensions: mysqli
@@ -151,20 +152,7 @@ jobs:
           WP_VERSION: ${{ matrix.wordpress }}
           WC_VERSION: ${{ matrix.woocommerce }}
           ORDER_STORAGE: ${{ matrix.order_storage }}
-        run: |
-          WP_PATH="$RUNNER_TEMP/wordpress"
-          wp core download --path="$WP_PATH" --version="$WP_VERSION" --force
-          wp config create --path="$WP_PATH" --dbname=wordpress --dbuser=root --dbpass=root --dbhost=127.0.0.1:3306 --skip-check
-          wp core install --path="$WP_PATH" --url=https://pre-orders.test --title="Pre-Orders CI" --admin_user=admin --admin_password=password --admin_email=admin@example.test --skip-email
-          wp plugin install woocommerce --path="$WP_PATH" --version="$WC_VERSION" --activate
-          ln -s "$GITHUB_WORKSPACE" "$WP_PATH/wp-content/plugins/pre-orders-wc"
-          if [ "$ORDER_STORAGE" = "hpos" ]; then
-            wp option update woocommerce_custom_orders_table_enabled yes --path="$WP_PATH"
-            wp option update woocommerce_custom_orders_table_data_sync_enabled no --path="$WP_PATH"
-          else
-            wp option update woocommerce_custom_orders_table_enabled no --path="$WP_PATH"
-          fi
-          wp plugin activate pre-orders-wc --path="$WP_PATH"
+        run: bash bin/setup-ci-wordpress.sh
 
       - name: Check syntax on the supported PHP runtime
         run: find . -path './.git' -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
@@ -185,14 +173,44 @@ jobs:
           PO_TEST_WP_PATH: ${{ runner.temp }}/wordpress
         run: bash tests/run-preorders-suite.sh
 
+  plugin-check:
+    name: WordPress Plugin Check (advisory)
+    needs: classify
+    if: ${{ needs.classify.outputs.plugin_check == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Stage distributable files
+        run: |
+          destination="$RUNNER_TEMP/package/pre-orders-wc"
+          mkdir -p "$destination"
+          rsync -a --exclude-from=.distignore ./ "$destination/"
+          test -f "$destination/pre-orders-wc.php"
+      - name: Run WordPress Plugin Check
+        uses: wordpress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
+        with:
+          build-dir: ${{ runner.temp }}/package/pre-orders-wc
+          slug: pre-orders-wc
+          ignore-codes: outdated_tested_upto_header
+
+  compatibility-canary:
+    name: Validate compatibility canary changes
+    needs: classify
+    if: ${{ needs.classify.outputs.canary == 'true' }}
+    uses: ./.github/workflows/compatibility-canary.yml
+
   ci-gate:
-    name: ${{ needs.classify.outputs.full == 'true' && 'CI Gate' || 'Iteration Gate' }}
+    name: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft && 'Iteration Gate' || 'CI Gate' }}
     if: ${{ always() }}
     needs: [classify, repository-contracts, quality, javascript, integration]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false

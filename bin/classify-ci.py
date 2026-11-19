@@ -39,6 +39,13 @@ def classify(event, draft, paths, jobs):
         'intensity': 'final' if full else 'iteration', 'full': full,
         'control_plane': control, 'quality': runtime, 'integration': runtime,
         'javascript': javascript,
+        'plugin_check': full and (runtime or javascript or any(
+            p.startswith(('css/', 'img/', 'languages/')) or p in {'license.txt', 'changelog.txt'}
+            for p in paths
+        )),
+        'canary': full and bool(paths & {
+            '.github/workflows/compatibility-canary.yml', 'bin/setup-ci-wordpress.sh',
+        }),
         'matrix': {'include': jobs if full else [representative]},
     }
 

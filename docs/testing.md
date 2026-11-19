@@ -47,13 +47,25 @@ Blocks UI behavior require targeted browser checks; JS syntax is insufficient.
 WordPress 6.5, WooCommerce 8.0 and PHP 7.4. Its four explicit test combinations
 cover PHP 7.4/8.0/8.2/8.4, legacy order storage and HPOS. The oldest job uses
 WordPress 6.5.5 rather than SM's below-minimum WordPress 6.3.5. These combinations
-are a sampled matrix, not a claim that every version permutation is tested.
+cover representative points within the supported range.
 
 Every hosted integration job creates a fresh WordPress database with MySQL 8.0,
 installs exact WP/WC versions, activates PO and verifies actual storage through
 `OrderUtil::custom_orders_table_usage_is_enabled()` before the suite. HPOS sync
 is disabled to avoid masking accidental dependence on legacy order records.
 There is no SM license bypass and no release/publishing step.
+
+## Additional compatibility signals
+
+Final CI runs the official WordPress Plugin Check action against the candidate
+staged with `.distignore`. The action publishes its findings and result artifact.
+This is advisory until Pre-Orders has a reviewed baseline. Stable WordPress
+version drift is tracked separately from Plugin Check's metadata diagnostics.
+
+The compatibility canary runs the same integration suite with WordPress nightly,
+current WooCommerce, PHP 8.4 and verified HPOS on a disposable site. GitHub runs
+it weekly and supports manual dispatch after adoption. Final CI exercises changes
+to the canary or its WP setup against those same moving upstream versions.
 
 See `docs/workflow.md` for Draft/Final selection. Record the candidate SHA, executed
 checks and any `NOT RUN — reason`; a green gate proves only selected checks.

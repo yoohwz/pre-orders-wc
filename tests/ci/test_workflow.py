@@ -34,7 +34,7 @@ class RoutingTests(unittest.TestCase):
     def test_governance_does_not_start_runtime(self):
         for draft in [False, True]:
             result = self.route(['AGENTS.md', 'docs/workflow.md', '.github/pull_request_template.md'], draft)
-            for check in ['quality', 'integration', 'javascript']:
+            for check in ['quality', 'integration', 'javascript', 'plugin_check']:
                 self.assertFalse(result[check])
 
     def test_control_plane_self_tests_final_graph(self):
@@ -42,9 +42,20 @@ class RoutingTests(unittest.TestCase):
             with self.subTest(path=path):
                 result = self.route([path])
                 self.assertTrue(result['control_plane'])
-                for check in ['quality', 'integration', 'javascript']:
+                for check in ['quality', 'integration', 'javascript', 'plugin_check']:
                     self.assertTrue(result[check])
                 self.assertEqual(result['matrix']['include'], JOBS)
+
+    def test_advisory_checks_follow_final_candidate_changes(self):
+        for path in ['css/frontend.css', 'inc/frontend/cart.php', 'js/orders.js']:
+            with self.subTest(path=path):
+                self.assertFalse(self.route([path], True)['plugin_check'])
+                self.assertTrue(self.route([path])['plugin_check'])
+                self.assertFalse(self.route([path])['canary'])
+        for path in ['.github/workflows/compatibility-canary.yml', 'bin/setup-ci-wordpress.sh']:
+            with self.subTest(path=path):
+                self.assertFalse(self.route([path], True)['canary'])
+                self.assertTrue(self.route([path])['canary'])
 
     def test_javascript_and_mixed_changes(self):
         result = self.route(['js/orders.js'], True)
@@ -151,8 +162,12 @@ class RepositoryTests(unittest.TestCase):
     def test_workflow_graph_and_candidate_binding(self):
         workflow = (ROOT / '.github/workflows/pre-orders-compatibility.yml').read_text()
         blocks = dict(re.findall(r'^  ([\w-]+):\n(.*?)(?=^  [\w-]+:|\Z)', workflow.split('jobs:\n', 1)[1], re.M | re.S))
-        self.assertEqual(set(blocks), {'classify', 'repository-contracts', 'quality', 'javascript', 'integration', 'ci-gate'})
-        for block in blocks.values():
+        self.assertEqual(set(blocks), {'classify', 'repository-contracts', 'quality',
+                                       'javascript', 'integration', 'plugin-check',
+                                       'compatibility-canary', 'ci-gate'})
+        for name, block in blocks.items():
+            if name == 'compatibility-canary':
+                continue
             self.assertIn('ref: ${{ github.event.pull_request.head.sha || github.sha }}', block)
             self.assertIn('persist-credentials: false', block)
             self.assertIn('timeout-minutes:', block)
@@ -163,7 +178,16 @@ class RepositoryTests(unittest.TestCase):
         self.assertIn('git diff --no-renames --name-only', blocks['classify'])
         self.assertIn('if: ${{ always() }}', blocks['ci-gate'])
         self.assertIn('needs: [classify, repository-contracts, quality, javascript, integration]', blocks['ci-gate'])
-        self.assertIn("'CI Gate' || 'Iteration Gate'", blocks['ci-gate'])
+        self.assertIn("github.event.pull_request.draft && 'Iteration Gate' || 'CI Gate'", blocks['ci-gate'])
+        self.assertNotIn('needs.classify.outputs.full', blocks['ci-gate'])
+        self.assertIn('rsync -a --exclude-from=.distignore', blocks['plugin-check'])
+        self.assertIn('uses: ./.github/workflows/compatibility-canary.yml', blocks['compatibility-canary'])
+        canary = (ROOT / '.github/workflows/compatibility-canary.yml').read_text()
+        for expected in ['schedule:', 'workflow_dispatch:', 'WP_VERSION: nightly',
+                         'WC_VERSION: latest', 'OrderUtil::custom_orders_table_usage_is_enabled()',
+                         'bash tests/run-preorders-suite.sh',
+                         'ref: ${{ github.event.pull_request.head.sha || github.sha }}']:
+            self.assertIn(expected, canary)
         for job in ['classify', 'repository-contracts', 'quality', 'javascript', 'integration']:
             self.assertIn('${{ needs.' + job + '.result }}', blocks['ci-gate'])
         for event in ['ready_for_review', 'converted_to_draft']:
