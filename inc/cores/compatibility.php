@@ -92,7 +92,23 @@ if ( ! function_exists( 'yoohw_pre_orders_wc_get_order_item_stock_status' ) ) {
 			}
 		}
 
-		return $fallback_product instanceof WC_Product ? (string) $fallback_product->get_stock_status() : '';
+		$status = $fallback_product instanceof WC_Product ? (string) $fallback_product->get_stock_status() : '';
+		if ( 'onpreorder' === $status && $item instanceof WC_Order_Item_Product && $item->get_order_id() ) {
+			$order = $item->get_order();
+			if ( $order instanceof WC_Order && '1' === (string) $order->get_meta( '_pre_order_marked', true ) ) {
+				$product_id = $item->get_variation_id() ?: $item->get_product_id();
+				if ( ! in_array( $product_id, yoohw_pre_orders_wc_get_tracked_product_ids( $order ), true ) ) {
+					foreach ( $order->get_items( 'line_item' ) as $line ) {
+						// Earlier versions snapshotted preorder lines only.
+						if ( 'onpreorder' === $line->get_meta( '_wcess_stock_status', true ) ) {
+							return '';
+						}
+					}
+				}
+			}
+		}
+
+		return $status;
 	}
 }
 

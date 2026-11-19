@@ -28,8 +28,8 @@ add_action(
 );
 
 add_action(
-	'woocommerce_blocks_loaded',
-	function() {
+	'woocommerce_blocks_checkout_block_registration',
+	function( \Automattic\WooCommerce\Blocks\Integrations\IntegrationRegistry $registry ) {
 		if ( ! interface_exists( '\\Automattic\\WooCommerce\\Blocks\\Integrations\\IntegrationInterface' ) ) {
 			return;
 		}
@@ -58,12 +58,7 @@ add_action(
 			}
 		}
 
-		add_action(
-			'woocommerce_blocks_checkout_block_registration',
-			function( \Automattic\WooCommerce\Blocks\Integrations\IntegrationRegistry $registry ) {
-				$registry->register( new YoOhw_Pre_Orders_WC_Customer_Actions_Blocks() );
-			}
-		);
+		$registry->register( new YoOhw_Pre_Orders_WC_Customer_Actions_Blocks() );
 	}
 );
 

@@ -36,7 +36,7 @@ class YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock {
 			return;
 		}
 
-		if ($retry_notification) {
+		if (true === $retry_notification) {
 			if ('instock' === $product->get_stock_status()) {
 				$this->update_orders_with_pre_order_items($product_id);
 			}
@@ -46,6 +46,14 @@ class YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock {
 		$date = yoohw_pre_orders_wc_parse_available_date(yoohw_pre_orders_wc_get_product_available_date($product));
 		if ('onpreorder' !== $product->get_stock_status() || !$date || $date->getTimestamp() > time()) {
 			return;
+		}
+
+		// Older schedules may run the stock event before the same-day reminder.
+		$reminder_hook = 'wc_pre_orders_email_admin_preorder_availability';
+		$reminder_time = wp_next_scheduled($reminder_hook, array($product_id));
+		if ($reminder_time && $reminder_time <= time() && 0 === absint(get_option('yoess_pre_order_email_to_admin_timer', 3))) {
+			wp_clear_scheduled_hook($reminder_hook, array($product_id));
+			YoOhw_Pre_Orders_WC_Email_Available_Product_Admin::notify_admin_preorder_availability_handler($product_id);
 		}
 
 		$product->set_stock_status('instock');
@@ -114,6 +122,9 @@ class YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock {
 			if (false === $sent) {
 				$retry = true;
 			} else {
+				// A mail hook can update the same order while the notification is being sent.
+				$order->read_meta_data(true);
+				$tracked_ids = yoohw_pre_orders_wc_get_tracked_product_ids($order);
 				$updated_ids = array_values(array_diff($tracked_ids, array(absint($product_id))));
 				if ($updated_ids) {
 					$order->update_meta_data('_pre_order_items', $updated_ids);

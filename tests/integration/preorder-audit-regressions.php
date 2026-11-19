@@ -189,6 +189,7 @@ add_filter( 'pre_wp_mail', $mail_filter, 10, 2 );
 
 try {
 	yoohw_po_audit_assert( class_exists( 'YoOhw_Pre_Orders_WC_Preorder_Limits' ), 'Activate Pre-Orders and WooCommerce before running this test.' );
+	yoohw_po_audit_assert( class_exists( 'YoOhw_Pre_Orders_WC_Customer_Actions_Blocks', false ), 'The checkout block did not register the delivery preference script integration.' );
 	$admins = get_users( [ 'role' => 'administrator', 'number' => 1, 'fields' => 'ID' ] );
 	yoohw_po_audit_assert( ! empty( $admins ), 'The disposable site needs an administrator for variation saves.' );
 	wp_set_current_user( $admins[0] );
@@ -222,6 +223,17 @@ try {
 	do_action( $stock_hook, $preorder_id );
 	do_action( $admin_hook, $preorder_id );
 	yoohw_po_audit_assert( 'onpreorder' === wc_get_product( $preorder_id )->get_stock_status() && [] === $mail, 'A stale callback changed stock or sent mail after the date was cleared.' );
+
+	$products[] = $same_day = yoohw_po_audit_simple_product( 'PO audit same-day reminder fixture', 'onpreorder' );
+	$same_day_id = $same_day->get_id();
+	$past_time   = yoohw_pre_orders_wc_parse_available_date( $past )->getTimestamp();
+	update_option( 'yoess_pre_order_email_to_admin_timer', 0 );
+	yoohw_pre_orders_wc_update_product_available_date( $same_day_id, $past );
+	wp_schedule_single_event( $past_time, $admin_hook, [ $same_day_id ] );
+	do_action( $stock_hook, $same_day_id );
+	do_action( $admin_hook, $same_day_id );
+	yoohw_po_audit_assert( 1 === count( $mail ) && 'instock' === wc_get_product( $same_day_id )->get_stock_status(), 'The old same-day schedule did not send one admin reminder before the stock transition.' );
+	update_option( 'yoess_pre_order_email_to_admin_timer', 3 );
 
 	$attribute = new WC_Product_Attribute();
 	$attribute->set_name( 'Size' );
@@ -258,7 +270,7 @@ try {
 	remove_action( 'woocommerce_before_product_object_save', $old_sync, 99 );
 	yoohw_po_audit_assert( has_term( 'outofstock', 'product_visibility', $old_parent_id ), 'The upgrade fixture must have the old catalog exclusion term.' );
 	delete_option( 'yoohw_pre_orders_wc_variable_visibility_repaired' );
-	do_action( 'admin_init' );
+	YoOhw_Pre_Orders_WC_Single_Product_Stock_Status::repair_variable_preorder_visibility();
 	$parent = wc_get_product( $old_parent_id );
 	yoohw_po_audit_assert( 'onpreorder' === $parent->get_stock_status() && $parent->is_visible(), 'The upgrade did not repair a previously hidden preorder-only product.' );
 
@@ -293,6 +305,13 @@ try {
 			}
 		}
 	}
+	foreach ( $classic_order->get_items() as $item ) {
+		if ( $regular_id === $item->get_product_id() ) {
+			$item->delete_meta_data( '_wcess_stock_status' );
+			$item->save();
+			yoohw_po_audit_assert( 'onpreorder' !== yoohw_pre_orders_wc_get_order_item_stock_status( $item ), 'An older mixed order reclassified its regular product after the catalog changed.' );
+		}
+	}
 	$regular->set_stock_status( 'instock' );
 	$regular->save();
 
@@ -301,6 +320,13 @@ try {
 	$draft->save();
 	$draft = wc_get_order( $draft->get_id() );
 	yoohw_po_audit_assert( 1 === count( $draft->get_items() ) && [] === yoohw_pre_orders_wc_get_tracked_product_ids( $draft ) && '' === $draft->get_meta( '_pre_order_marked', true ), 'A regular-only Blocks draft retained preorder tracking.' );
+	$draft->update_meta_data( '_pre_order_items', [ $preorder_id ] );
+	$draft->update_meta_data( '_pre_order_marked', '1' );
+	$draft->save();
+	$checkout->update_order_from_cart( $draft );
+	do_action( 'woocommerce_store_api_checkout_update_order_meta', $draft );
+	$draft->save();
+	yoohw_po_audit_assert( [] === yoohw_pre_orders_wc_get_tracked_product_ids( wc_get_order( $draft->get_id() ) ), 'An older Blocks draft kept stale tracking when its cart hash was unchanged.' );
 	$cart->add_to_cart( $preorder_id, 1 );
 	$checkout->update_order_from_cart( $draft );
 	$draft->save();
@@ -316,7 +342,7 @@ try {
 	$orders[] = $mail_order = wc_create_order();
 	$mail_order->set_billing_email( 'po-audit-mail@example.com' );
 	$mail_order->add_product( wc_get_product( $preorder_id ), 1 );
-	$mail_order->update_meta_data( '_pre_order_items', [ $preorder_id ] );
+	$mail_order->update_meta_data( '_pre_order_items', [ $preorder_id, $regular_id ] );
 	$mail_order->save();
 	update_option( 'woocommerce_pre_order_schedule_settings', [ 'enabled' => 'yes' ] );
 	yoohw_pre_orders_wc_update_product_available_date( $preorder_id, $past );
@@ -324,7 +350,7 @@ try {
 	$delivery_succeeds = false;
 	do_action( $stock_hook, $preorder_id );
 	yoohw_po_audit_assert( 'instock' === wc_get_product( $preorder_id )->get_stock_status(), 'A mail failure blocked the due stock transition.' );
-	yoohw_po_audit_assert( 1 === count( $mail ) && [ $preorder_id ] === yoohw_pre_orders_wc_get_tracked_product_ids( wc_get_order( $mail_order->get_id() ) ), 'A failed send lost the pending notification or caused multiple immediate sends.' );
+	yoohw_po_audit_assert( 1 === count( $mail ) && [ $preorder_id, $regular_id ] === yoohw_pre_orders_wc_get_tracked_product_ids( wc_get_order( $mail_order->get_id() ) ), 'A failed send lost the pending notification or caused multiple immediate sends.' );
 	yoohw_po_audit_assert( wp_next_scheduled( $stock_hook, [ $preorder_id, true ] ), 'A failed send did not schedule the notification retry.' );
 	$notes = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $mail_order->get_id() ] ), 'content' );
 	yoohw_po_audit_assert( false === strpos( implode( "\n", $notes ), 'the customer has been notified' ), 'The order falsely claimed that the failed message was sent.' );
@@ -332,7 +358,18 @@ try {
 	// Run the retry callback as WP-Cron does after removing the single event.
 	wp_clear_scheduled_hook( $stock_hook, [ $preorder_id, true ] );
 	$delivery_succeeds = true;
-	do_action( $stock_hook, $preorder_id, true );
+	$other_update      = static function ( $sent ) use ( $mail_order, $preorder_id ) {
+		$fresh = wc_get_order( $mail_order->get_id() );
+		$fresh->update_meta_data( '_pre_order_items', [ $preorder_id ] );
+		$fresh->save();
+		return $sent;
+	};
+	add_filter( 'pre_wp_mail', $other_update, 20 );
+	try {
+		do_action( $stock_hook, $preorder_id, true );
+	} finally {
+		remove_filter( 'pre_wp_mail', $other_update, 20 );
+	}
 	do_action( $stock_hook, $preorder_id, true );
 	yoohw_po_audit_assert( 2 === count( $mail ) && [] === yoohw_pre_orders_wc_get_tracked_product_ids( wc_get_order( $mail_order->get_id() ) ), 'The retry did not acknowledge a successful send exactly once.' );
 	yoohw_po_audit_assert( ! wp_next_scheduled( $stock_hook, [ $preorder_id, true ] ), 'Successful notification kept scheduling retries.' );

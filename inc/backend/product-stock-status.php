@@ -14,7 +14,7 @@ class YoOhw_Pre_Orders_WC_Single_Product_Stock_Status {
 		add_action('woocommerce_admin_process_product_object', array($this, 'save_pre_order_stock_status'));
 		add_filter('woocommerce_product_is_in_stock', array($this, 'product_in_stock_status'), 10, 2);
 		add_action('woocommerce_before_product_object_save', array($this, 'preserve_variable_preorder_visibility'));
-		add_action('admin_init', array($this, 'repair_variable_preorder_visibility'));
+		add_action('admin_init', array(__CLASS__, 'repair_variable_preorder_visibility'));
 		add_filter('woocommerce_product_class', array($this, 'set_pre_order_stock_class'), 10, 4);
 		add_action('woocommerce_product_options_stock_status', array($this, 'add_pre_order_available_date_field'));
 		add_action('woocommerce_process_product_meta', array($this, 'save_pre_order_date'), 99);
@@ -79,7 +79,7 @@ class YoOhw_Pre_Orders_WC_Single_Product_Stock_Status {
 		}
 	}
 
-	public function repair_variable_preorder_visibility() {
+	public static function repair_variable_preorder_visibility() {
 		if (!current_user_can('manage_woocommerce') || get_option(self::VARIABLE_VISIBILITY_REPAIRED)) {
 			return;
 		}
@@ -97,6 +97,9 @@ class YoOhw_Pre_Orders_WC_Single_Product_Stock_Status {
 				'order'        => 'ASC',
 			));
 			foreach ($variations->products as $variation) {
+				if (!$variation->variation_is_visible()) {
+					continue;
+				}
 				$parent = wc_get_product($variation->get_parent_id());
 				if ($parent instanceof WC_Product_Variable && !$parent->get_manage_stock('edit') && 'outofstock' === $parent->get_stock_status('edit')) {
 					WC_Product_Variable::sync_stock_status($parent);
@@ -190,8 +193,8 @@ class YoOhw_Pre_Orders_WC_Single_Product_Stock_Status {
 
 	private function save_available_date($product_id, $date) {
 		yoohw_pre_orders_wc_update_product_available_date($product_id, $date);
-		YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock::schedule_event_for_product($product_id);
 		YoOhw_Pre_Orders_WC_Email_Available_Product_Admin::schedule_event_for_available_product_admin($product_id);
+		YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock::schedule_event_for_product($product_id);
 	}
 
 	// Add pre-order data to variations in front-end

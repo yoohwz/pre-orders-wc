@@ -8,7 +8,7 @@ class YoOhw_Pre_Orders_WC_Email_Available_Product_Admin {
 
     public function __construct() {
         // Add hooks
-        add_action('wc_pre_orders_email_admin_preorder_availability', array($this, 'notify_admin_preorder_availability_handler'));
+        add_action('wc_pre_orders_email_admin_preorder_availability', array(__CLASS__, 'notify_admin_preorder_availability_handler'));
     }
 
 	public static function schedule_event_for_available_product_admin($product_id) {
@@ -33,7 +33,7 @@ class YoOhw_Pre_Orders_WC_Email_Available_Product_Admin {
 		return $date ? $date->getTimestamp() - $days_before * DAY_IN_SECONDS : null;
 	}
 
-	public function notify_admin_preorder_availability_handler($product_id) {
+	public static function notify_admin_preorder_availability_handler($product_id) {
 		$product = wc_get_product($product_id);
 	
 		$timestamp = self::get_reminder_timestamp($product);
