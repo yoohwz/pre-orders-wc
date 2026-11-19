@@ -84,7 +84,7 @@ class YoOhw_Pre_Orders_WC_Pre_Order_Email extends WC_Email {
      * Trigger the email.
      */
     public function trigger( $order_id ) {
-      
+        $result = null;
         $this->setup_locale();
     
         $this->object = wc_get_order( $order_id );
@@ -129,11 +129,12 @@ class YoOhw_Pre_Orders_WC_Pre_Order_Email extends WC_Email {
         }
     
         if ( $this->is_enabled() && $this->recipient ) {
-            $result = $this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
+            $result = (bool) $this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
     
         }
     
         $this->restore_locale();
+        return $result;
     }
     
     /**

@@ -99,9 +99,8 @@ if ( ! function_exists( 'yoohw_pre_orders_wc_get_order_item_stock_status' ) ) {
 if ( ! function_exists( 'yoohw_pre_orders_wc_get_order_item_available_date' ) ) {
 	function yoohw_pre_orders_wc_get_order_item_available_date( $item, $fallback_product = null ) {
 		if ( $item instanceof WC_Order_Item_Product ) {
-			$snapshot = (string) $item->get_meta( '_wcess_available_date', true );
-			if ( '' !== $snapshot ) {
-				return yoohw_pre_orders_wc_normalize_available_date( $snapshot );
+			if ( $item->meta_exists( '_wcess_available_date' ) ) {
+				return yoohw_pre_orders_wc_normalize_available_date( $item->get_meta( '_wcess_available_date', true ) );
 			}
 			if ( ! $fallback_product ) {
 				$fallback_product = $item->get_product();
