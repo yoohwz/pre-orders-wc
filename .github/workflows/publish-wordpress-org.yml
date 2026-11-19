@@ -905,7 +905,7 @@ jobs:
       - production-publish
       - verify-public
     if: >-
-      ${{ always() &&
+      ${{ always() && !inputs.dry_run &&
           ((needs.production-publish.result == 'success' && needs.production-publish.outputs.wporg_state == 'WPORG_PUBLIC_RELEASE_VERIFIED') ||
            (needs.verify-public.result == 'success' && needs.verify-public.outputs.wporg_state == 'WPORG_PUBLIC_RELEASE_VERIFIED')) }}
     runs-on: ubuntu-latest

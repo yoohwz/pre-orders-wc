@@ -264,6 +264,22 @@ class ReleasePackageTests(unittest.TestCase):
         run(*command, expect_success=False)
 
 
+class ReleaseWorkflowTests(unittest.TestCase):
+    def test_dry_run_cannot_enter_either_release_write_job(self) -> None:
+        publisher = (ROOT / ".github/workflows/publish-wordpress-org.yml").read_text(encoding="utf-8")
+        verify = publisher.split("  verify-public:\n", 1)[1].split("  github-release:\n", 1)[0]
+        self.assertIn("inputs.operation == 'verify-only'", verify)
+        self.assertIn("contents: read", verify)
+        self.assertNotIn("contents: write", verify)
+        self.assertIn("default: true", publisher)
+        production = publisher.split("  production-publish:\n", 1)[1].split("  verify-public:\n", 1)[0]
+        self.assertIn("inputs.operation == 'publish' && !inputs.dry_run", production)
+        github_release = publisher.split("  github-release:\n", 1)[1]
+        guard = github_release.split("    if: >-\n", 1)[1].split("    runs-on:", 1)[0]
+        self.assertIn("always() && !inputs.dry_run &&", guard)
+        self.assertNotIn("svn commit", github_release)
+
+
 @unittest.skipUnless(shutil.which("svn") and shutil.which("svnadmin"), "Subversion CLI is not available")
 class LocalSvnStateTests(unittest.TestCase):
     def setUp(self) -> None:

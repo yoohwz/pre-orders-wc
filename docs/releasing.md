@@ -89,9 +89,10 @@ After Human confirmation or propagation delay, run the same publisher from **mai
 - `operation=verify-only`;
 - the original preparation run ID;
 - the same candidate SHA/version;
-- `original_publish_run_id` set to the run that committed SVN.
+- `original_publish_run_id` set to the run that committed SVN;
+- `dry_run=true` to verify public evidence only, or explicitly set `dry_run=false` to publish or reconcile the verified GitHub Release.
 
-The verification-only path has no SVN password, tag-creation command, or SVN write command. It re-authenticates the preparation and original-publish artifacts, verifies the immutable Git tag, SVN revision/log/trunk/tag, unchanged assets, Plugins API version, and expanded public download tree. If the SVN commit response was lost before a publication record could be uploaded, it may reconstruct that record only from the authenticated preflight plus the exact SVN log/tree identity. It then creates, publishes, or idempotently reconciles the GitHub Release and its exact asset set.
+The verification-only path has no SVN password, tag-creation command, or SVN write command. It re-authenticates the preparation and original-publish artifacts, verifies the immutable Git tag, SVN revision/log/trunk/tag, unchanged assets, Plugins API version, and expanded public download tree. If the SVN commit response was lost before a publication record could be uploaded, it may reconstruct that record only from the authenticated preflight plus the exact SVN log/tree identity. With `dry_run=false`, the verified evidence authorizes the final job to publish or reconcile the GitHub Release and its exact asset set.
 
 ## Recovery table
 
