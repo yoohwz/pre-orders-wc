@@ -104,8 +104,14 @@ try {
 	$preorder_item = wc_get_order( $order->get_id() )->get_item( $preorder_item_id );
 	yoohw_preorders_test_assert( $new_date === $preorder_item->get_meta( YoOhw_Pre_Orders_WC_Overview::DELAY_ITEM_META, true ), 'Delay-notification deduplication marker was not saved.' );
 
+	yoohw_pre_orders_wc_update_product_available_date( $preorder->get_id(), wp_date( 'Y-m-d\TH:i', time() - 2 * MINUTE_IN_SECONDS, wp_timezone() ) );
 	$auto_update = new YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock();
-	$auto_update->update_pre_order_stock_status( $preorder->get_id() );
+	add_filter( 'pre_wp_mail', '__return_true' );
+	try {
+		$auto_update->update_pre_order_stock_status( $preorder->get_id() );
+	} finally {
+		remove_filter( 'pre_wp_mail', '__return_true' );
+	}
 	$preorder = wc_get_product( $preorder->get_id() );
 	yoohw_preorders_test_assert( 'instock' === $preorder->get_stock_status(), 'Automatic preorder stock transition failed.' );
 	yoohw_preorders_test_assert( '' === get_post_meta( $preorder->get_id(), '_pre_order_available_date', true ), 'Legacy available date was not cleared after stock transition.' );

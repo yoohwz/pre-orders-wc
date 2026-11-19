@@ -12,6 +12,10 @@ class YoOhw_Pre_Orders_WC_Preorder_Limits {
 		add_action( 'woocommerce_save_product_variation', [ $this, 'save_variation_field' ], 20, 2 );
 		add_filter( 'woocommerce_available_variation', [ $this, 'add_variation_data' ] );
 		add_filter( 'woocommerce_add_to_cart_validation', [ $this, 'validate_cart_quantity' ], 10, 5 );
+		add_filter( 'woocommerce_update_cart_validation', [ $this, 'validate_cart_update' ], 10, 4 );
+		add_action( 'woocommerce_check_cart_items', [ $this, 'validate_classic_cart' ] );
+		add_filter( 'woocommerce_store_api_product_quantity_maximum', [ $this, 'limit_store_api_quantity' ], 10, 3 );
+		add_action( 'woocommerce_store_api_cart_errors', [ $this, 'validate_store_api_cart' ], 10, 2 );
 	}
 
 	public function render_product_field() {
@@ -82,41 +86,96 @@ class YoOhw_Pre_Orders_WC_Preorder_Limits {
 
 	public function validate_cart_quantity( $passed, $product_id, $quantity, $variation_id = 0, $variations = [] ) {
 		unset( $variations );
-		$target_id = $variation_id ? absint( $variation_id ) : absint( $product_id );
-		$product   = wc_get_product( $target_id );
-		if ( ! $product || 'onpreorder' !== $product->get_stock_status() ) {
+
+		return $this->validate_quantity( $passed, wc_get_product( $variation_id ?: $product_id ), $quantity );
+	}
+
+	public function validate_cart_update( $passed, $cart_item_key, $cart_item, $quantity ) {
+		return $this->validate_quantity( $passed, $cart_item['data'] ?? null, $quantity, $cart_item_key );
+	}
+
+	private function validate_quantity( $passed, $product, $quantity, $excluded_key = '' ) {
+		$limit = $this->get_preorder_limit( $product );
+		if ( ! $passed || $quantity <= 0 || ! $limit || $this->get_cart_quantity( WC()->cart, $product->get_id(), $excluded_key ) + $quantity <= $limit ) {
 			return $passed;
 		}
 
-		$limit = $this->get_limit( $target_id );
-		if ( $limit < 1 ) {
-			return $passed;
+		wc_add_notice( $this->get_limit_message( $limit ), 'error' );
+
+		return false;
+	}
+
+	public function limit_store_api_quantity( $maximum, $product, $cart_item = [] ) {
+		$limit = $this->get_preorder_limit( $product );
+		if ( ! $limit ) {
+			return $maximum;
 		}
 
-		$cart_quantity = 0;
-		if ( WC()->cart ) {
-			foreach ( WC()->cart->get_cart() as $cart_item ) {
-				$item_id = ! empty( $cart_item['variation_id'] ) ? absint( $cart_item['variation_id'] ) : absint( $cart_item['product_id'] ?? 0 );
-				if ( $item_id === $target_id ) {
-					$cart_quantity += absint( $cart_item['quantity'] ?? 0 );
-				}
+		$other_quantity = ! empty( $cart_item['key'] )
+			? $this->get_cart_quantity( WC()->cart, $product->get_id(), $cart_item['key'] )
+			: 0;
+
+		return min( $maximum, max( 1, $limit - $other_quantity ) );
+	}
+
+	public function validate_classic_cart() {
+		foreach ( $this->get_cart_limit_errors( WC()->cart ) as $message ) {
+			if ( ! wc_has_notice( $message, 'error' ) ) {
+				wc_add_notice( $message, 'error' );
+			}
+		}
+	}
+
+	public function validate_store_api_cart( $errors, $cart ) {
+		foreach ( $this->get_cart_limit_errors( $cart ) as $product_id => $message ) {
+			$errors->add( 'yoohw_preorder_quantity_' . $product_id, $message );
+		}
+	}
+
+	private function get_cart_limit_errors( $cart ) {
+		$totals   = [];
+		$products = [];
+		$errors   = [];
+		foreach ( $cart ? $cart->get_cart() : [] as $item ) {
+			$product = $item['data'] ?? null;
+			if ( $product instanceof WC_Product && 'onpreorder' === $product->get_stock_status() ) {
+				$id              = $product->get_id();
+				$products[ $id ] = $product;
+				$totals[ $id ]   = ( $totals[ $id ] ?? 0 ) + $item['quantity'];
+			}
+		}
+		foreach ( $totals as $id => $total ) {
+			$limit = $this->get_preorder_limit( $products[ $id ] );
+			if ( $limit && $total > $limit ) {
+				$errors[ $id ] = $this->get_limit_message( $limit );
 			}
 		}
 
-		if ( $cart_quantity + absint( $quantity ) <= $limit ) {
-			return $passed;
+		return $errors;
+	}
+
+	private function get_cart_quantity( $cart, $product_id, $excluded_key ) {
+		$total = 0;
+		foreach ( $cart ? $cart->get_cart() : [] as $key => $item ) {
+			$item_id = absint( $item['variation_id'] ?: $item['product_id'] );
+			if ( $key !== $excluded_key && $item_id === $product_id ) {
+				$total += $item['quantity'];
+			}
 		}
 
-		wc_add_notice(
-			sprintf(
-				/* translators: %d: maximum preorder quantity per order. */
-				__( 'You can add a maximum of %d unit(s) of this preorder product to one order.', 'pre-orders-wc' ),
-				$limit
-			),
-			'error'
-		);
+		return $total;
+	}
 
-		return false;
+	private function get_preorder_limit( $product ) {
+		return $product instanceof WC_Product && 'onpreorder' === $product->get_stock_status() ? $this->get_limit( $product->get_id() ) : 0;
+	}
+
+	private function get_limit_message( $limit ) {
+		return sprintf(
+			/* translators: %d: maximum preorder quantity per order. */
+			__( 'You can add a maximum of %d unit(s) of this preorder product to one order.', 'pre-orders-wc' ),
+			$limit
+		);
 	}
 
 	private function get_limit( $product_id ) {
