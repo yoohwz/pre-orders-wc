@@ -35,6 +35,14 @@ automatic return to `instock`. Mail dispatch is intercepted; actual delivery is
 not tested. It does not exercise a browser checkout flow, full authorization
 boundaries, concurrency or all upgrade scenarios.
 
+Order-admin fixtures cover the HPOS and legacy list queries, including historic
+and mixed preorders, deleted products, search, status, dates and pagination.
+Operational fixtures exercise mode switching, permission and replay checks,
+completion lock contention, and WooCommerce's Classic and Store API payment
+validation. Browser checks cover the Orders filter and detail, the manual
+completion action, and available and unavailable payment methods in both
+checkout experiences.
+
 The optional Stock Manager bridge assertions run only when its migration class is
 loaded. Hosted PO CI does not install the private premium plugin, so it does not
 prove the bridge. Changes to that contract require separate disposable upgrade

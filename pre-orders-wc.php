@@ -100,6 +100,7 @@ class YoOhw_Pre_Orders_WC {
 		$hooks = [
 			'wc_pre_orders_update_stock_status',
 			'wc_pre_orders_email_admin_preorder_availability',
+			'yoohw_pre_orders_reconcile_auto_schedule',
 		];
 
 		foreach ($crons as $timestamp => $cron) {

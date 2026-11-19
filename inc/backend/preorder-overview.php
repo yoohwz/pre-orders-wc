@@ -89,7 +89,7 @@ class YoOhw_Pre_Orders_WC_Overview_List_Table extends WP_List_Table {
 		return '<strong>' . $name . '</strong><div class="yoohw-preorders-muted">' . esc_html( $details ) . '</div>';
 	}
 
-	private function column_notifications( $item ) {
+	protected function column_notifications( $item ) {
 		if ( $item['customers_to_notify'] < 1 ) {
 			return '<span class="yoohw-preorders-muted">' . esc_html__( 'Up to date', 'pre-orders-wc' ) . '</span>';
 		}
@@ -101,12 +101,20 @@ class YoOhw_Pre_Orders_WC_Overview_List_Table extends WP_List_Table {
 		);
 	}
 
-	private function column_actions( $item ) {
+	protected function column_actions( $item ) {
 		ob_start();
 		?>
 		<div class="yoohw-preorders-actions">
 			<?php if ( $item['edit_url'] ) : ?>
 				<a class="button button-small" href="<?php echo esc_url( $item['edit_url'] ); ?>"><?php esc_html_e( 'Edit product', 'pre-orders-wc' ); ?></a>
+			<?php endif; ?>
+			<?php if ( $item['can_confirm'] ) : ?>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="yoohw_pre_orders_confirm_available" />
+					<input type="hidden" name="product_id" value="<?php echo esc_attr( $item['product_id'] ); ?>" />
+					<?php wp_nonce_field( 'yoohw_pre_orders_confirm_available_' . $item['product_id'] ); ?>
+					<button class="button button-small" type="submit"><?php esc_html_e( 'Confirm available', 'pre-orders-wc' ); ?></button>
+				</form>
 			<?php endif; ?>
 			<?php if ( $item['customers_to_notify'] > 0 ) : ?>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -129,6 +137,7 @@ class YoOhw_Pre_Orders_WC_Overview {
 	public function __construct() {
 		add_action( 'admin_menu', [ $this, 'add_menu' ], 35 );
 		add_action( 'admin_post_yoohw_pre_orders_notify_delay', [ $this, 'handle_delay_notification' ] );
+		add_action( 'admin_post_yoohw_pre_orders_confirm_available', [ $this, 'handle_confirm_available' ] );
 		add_filter( 'set-screen-option', [ $this, 'save_screen_option' ], 10, 3 );
 	}
 
@@ -230,6 +239,23 @@ class YoOhw_Pre_Orders_WC_Overview {
 		$this->redirect_after_notify( $result['sent'], $result['skipped'], '' );
 	}
 
+	public function handle_confirm_available() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'You do not have permission to confirm preorders.', 'pre-orders-wc' ), '', [ 'response' => 403 ] );
+		}
+
+		$product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
+		check_admin_referer( 'yoohw_pre_orders_confirm_available_' . $product_id );
+		if ( ! current_user_can( 'edit_post', $product_id ) ) {
+			wp_die( esc_html__( 'You do not have permission to edit this product.', 'pre-orders-wc' ), '', [ 'response' => 403 ] );
+		}
+		$result = YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock::confirm_available( $product_id );
+		if ( is_wp_error( $result ) ) {
+			wp_die( esc_html( $result->get_error_message() ), '', [ 'response' => 409, 'back_link' => true ] );
+		}
+		$this->redirect_after_notify( 0, 0, $result ? 'confirmed_available' : 'invalid_product' );
+	}
+
 	private function get_active_preorders( array $aggregates ) {
 		$products = [];
 		foreach ( [ '', 'variation' ] as $type ) {
@@ -281,6 +307,7 @@ class YoOhw_Pre_Orders_WC_Overview {
 				'units'               => absint( $aggregate['units'] ),
 				'customers_to_notify' => absint( $aggregate['customers_to_notify'] ),
 				'edit_url'            => get_edit_post_link( $edit_id, '' ) ?: '',
+				'can_confirm'         => YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock::can_confirm( $product ),
 			];
 		}
 
@@ -349,11 +376,12 @@ class YoOhw_Pre_Orders_WC_Overview {
 	private function item_needs_delay_notice( $item, $product_id ) {
 		$current  = yoohw_pre_orders_wc_get_product_available_date( $product_id );
 		$snapshot = (string) $item->get_meta( '_wcess_available_date', true );
-		$sent     = (string) $item->get_meta( self::DELAY_ITEM_META, true );
 		$current_date  = yoohw_pre_orders_wc_parse_available_date( $current );
 		$snapshot_date = yoohw_pre_orders_wc_parse_available_date( $snapshot );
 
-		return $current_date && $snapshot_date && $current_date->getTimestamp() > $snapshot_date->getTimestamp() && yoohw_pre_orders_wc_normalize_available_date( $sent ) !== yoohw_pre_orders_wc_normalize_available_date( $current );
+		return $current_date && $snapshot_date && $current_date->getTimestamp() > $snapshot_date->getTimestamp() &&
+			$current !== yoohw_pre_orders_wc_normalize_available_date( $item->get_meta( self::DELAY_ITEM_META, true ) ) &&
+			$current !== yoohw_pre_orders_wc_normalize_available_date( $item->get_meta( '_wcess_delay_notice_date', true ) );
 	}
 
 	private function send_delay_notifications( $product ) {
@@ -372,7 +400,7 @@ class YoOhw_Pre_Orders_WC_Overview {
 					continue;
 				}
 				$items[] = $item;
-				$last_notified_date = (string) $item->get_meta( self::DELAY_ITEM_META, true );
+				$last_notified_date = $item->get_meta( self::DELAY_ITEM_META, true ) ?: $item->get_meta( '_wcess_delay_notice_date', true );
 				$old_date = $old_date ?: ( $last_notified_date ?: (string) $item->get_meta( '_wcess_available_date', true ) );
 			}
 			if ( empty( $items ) ) {
@@ -384,6 +412,7 @@ class YoOhw_Pre_Orders_WC_Overview {
 			}
 			foreach ( $items as $item ) {
 				$item->update_meta_data( self::DELAY_ITEM_META, $current_date );
+				$item->update_meta_data( '_wcess_delay_notice_date', $current_date );
 				$item->save();
 			}
 			$order->add_order_note(
@@ -551,6 +580,10 @@ class YoOhw_Pre_Orders_WC_Overview {
 		$skipped = isset( $_GET['skipped'] ) ? absint( wp_unslash( $_GET['skipped'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Redirect notice only.
 		if ( 'invalid_product' === $status ) {
 			echo '<div class="notice notice-error"><p>' . esc_html__( 'The preorder product could not be found.', 'pre-orders-wc' ) . '</p></div>';
+			return;
+		}
+		if ( 'confirmed_available' === $status ) {
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'The preorder product was marked in stock.', 'pre-orders-wc' ) . '</p></div>';
 			return;
 		}
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html(

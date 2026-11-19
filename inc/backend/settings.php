@@ -38,6 +38,11 @@ class YoOhw_Pre_Orders_WC_Settings {
 	}
 
 	public function get_pre_orders_settings() {
+		$payment_methods = [];
+		foreach ( WC()->payment_gateways()->payment_gateways() as $gateway_id => $gateway ) {
+			$payment_methods[ $gateway_id ] = $gateway->get_method_title() ?: $gateway->get_title();
+		}
+
 		$order_splitter = sprintf(
 			'<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
 			esc_url(admin_url('plugin-install.php?s=wc-order-splitter&tab=search&type=term')),
@@ -61,6 +66,26 @@ class YoOhw_Pre_Orders_WC_Settings {
 				'desc_tip' => esc_html__('Replace the default \'Add to Cart\' button for the pre-order product.', 'pre-orders-wc'),
 				'id'       => 'yoess_pre_order_button_text',
 				'default'  => esc_html__('Pre-order now', 'pre-orders-wc'),
+			],
+			[
+				'name'     => esc_html__('Preorder completion', 'pre-orders-wc'),
+				'type'     => 'select',
+				'desc_tip' => esc_html__('In manual mode, use Confirm available under Products → Pre-orders. Expected dates and reminders remain available.', 'pre-orders-wc'),
+				'id'       => YoOhw_Pre_Orders_WC_Auto_Update_To_In_Stock::MODE_OPTION,
+				'default'  => 'auto_by_date',
+				'options'  => [
+					'auto_by_date' => __('Automatically on the expected date', 'pre-orders-wc'),
+					'manual'       => __('Confirm availability manually', 'pre-orders-wc'),
+				],
+			],
+			[
+				'name'     => esc_html__('Exclude payment methods for preorders', 'pre-orders-wc'),
+				'type'     => 'multiselect',
+				'class'    => 'wc-enhanced-select',
+				'desc_tip' => esc_html__('Applies to the entire cart when it contains any preorder item. Leave empty to use the available WooCommerce payment methods.', 'pre-orders-wc'),
+				'id'       => YoOhw_Pre_Orders_WC_Payment_Methods::OPTION,
+				'default'  => [],
+				'options'  => $payment_methods,
 			],
 			[
 				'name'     => esc_html__('Administrator reminder', 'pre-orders-wc'),

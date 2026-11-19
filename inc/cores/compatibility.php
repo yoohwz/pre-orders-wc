@@ -223,6 +223,7 @@ class YoOhw_Pre_Orders_WC_Compatibility {
 		$keys[] = '_wcess_stock_status';
 		$keys[] = '_wcess_available_date';
 		$keys[] = '_yoohw_preorder_delay_notice_date';
+		$keys[] = '_wcess_delay_notice_date';
 
 		return array_values( array_unique( $keys ) );
 	}
