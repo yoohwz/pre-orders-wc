@@ -16,7 +16,7 @@ def classify(event, draft, paths, jobs):
     paths = set(paths)
     full = event != 'pull_request' or not draft
     control = bool(paths & CONTROL_PLANE) or any(
-        p.startswith(('.github/workflows/', 'bin/', 'tests/ci/')) for p in paths
+        p.startswith(('.github/workflows/', 'bin/', 'release/', 'tests/ci/')) for p in paths
     )
     runtime = not paths
     javascript = False

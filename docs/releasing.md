@@ -7,7 +7,7 @@ This runbook describes the Human-gated GitHub-to-WordPress.org release pipeline.
 Before the first production use, a repository administrator and WordPress.org plugin committer must deliberately configure and verify:
 
 1. GitHub Environment `wordpress-org-production`:
-   - required Human reviewer(s);
+   - required Human reviewer(s), with administrator bypass disabled;
    - deployment branch policy allowing protected `main` only;
    - environment variable `WPORG_SVN_USERNAME` for a verified Pre-Orders committer;
    - environment secret `WPORG_SVN_PASSWORD` containing the WordPress.org SVN-specific password.
@@ -52,7 +52,7 @@ From the Actions UI on **main**, manually run `Publish Pre-Orders to WordPress.o
 
 - `operation=publish`;
 - the successful preparation run ID;
-- the same exact candidate SHA and version;
+- the same exact candidate SHA and version, newer than existing numeric SVN tags;
 - `dry_run=true` for rehearsal, or `dry_run=false` only for an explicitly authorized production release.
 
 The workflow enforces this sequence:
@@ -68,7 +68,7 @@ RC_PREPARED
   -> WORDPRESS_ORG_RELEASE_STATE
 ```
 
-The preflight happens before the protected environment. Review its exact candidate, manifest, current SVN trunk/assets digests, target-tag absence, local SVN delta, and Release Confirmation mode. Approving the environment authorizes only that snapshot. Relevant SVN drift after approval invalidates the release before tag sealing.
+The preflight happens before the protected environment. Review its exact candidate, manifest, current SVN trunk/assets digests, target-tag absence, local SVN delta, and Release Confirmation mode. Approving the environment authorizes that snapshot. The workflow rereads SVN immediately before tag sealing. Competing SVN writers remain outside GitHub concurrency, so coordinate manual publication with the other committers.
 
 The workflow definition and trusted helpers always execute from protected `main`. Candidate source/artifacts are treated as data and are never executed in the secret-bearing step. `WPORG_SVN_PASSWORD` is mapped only to the atomic SVN commit step.
 
@@ -80,7 +80,7 @@ After the SVN commit, the production path performs a fresh checkout and authenti
 
 After authenticated SVN verification:
 
-- `enabled` or `unknown` produces `WPORG_RELEASE_CONFIRMATION_PENDING`. A WordPress.org plugin committer must confirm through Release Management/tokenized email. Do not rerun publication and do not recommit SVN.
+- `enabled` or `unknown` produces `WPORG_RELEASE_CONFIRMATION_PENDING`. The committer checks Release Management and confirms by tokenized email when requested. Once the public version is available, use verification-only.
 - `disabled` permits bounded public propagation checks. A timeout produces `WPORG_PROPAGATION_PENDING`; this is not an SVN failure.
 - GitHub Release publication is allowed only after `WPORG_PUBLIC_RELEASE_VERIFIED`.
 
@@ -102,11 +102,11 @@ The verification-only path has no SVN password, tag-creation command, or SVN wri
 | Final recheck failed | Re-run preflight and obtain a new approval for the new snapshot. |
 | `TAGGED_NOT_PUBLISHED` | Continue only when the annotated tag resolves to the exact SHA and target SVN tag is absent. Never move the Git tag. |
 | SVN commit outcome ambiguous | Run `verify-only`. Exact SVN tag/log/tree/assets evidence reconstructs the missing record and continues; a missing SVN tag may use an explicitly approved publish recovery; any mismatch requires `HUMAN_DECISION_REQUIRED`. |
-| `WPORG_RELEASE_CONFIRMATION_PENDING` | Human confirms in WordPress.org, then runs `verify-only`. |
+| `WPORG_RELEASE_CONFIRMATION_PENDING` | Human checks Release Management and confirms if requested, then runs `verify-only`. |
 | `WPORG_PROPAGATION_PENDING` | Wait, then run `verify-only`; never recommit SVN. |
 | SVN/public verified but GitHub Release missing | Run `verify-only`; exact existing Release is a no-op, mismatch requires Human review. |
 
-Never interpret CDN/API delay, pending Release Confirmation, an existing tag, or an unexpected SVN delta as permission to overwrite production state.
+When the public ZIP or version is pending, check WordPress.org Release Management before retrying verification. [Release Confirmation](https://developer.wordpress.org/plugins/wordpress-org/release-confirmation-emails/) and [WordPress.org security review](https://developer.wordpress.org/plugins/wordpress-org/automated-security-review/) can delay public availability.
 
 ## Validation without publication
 

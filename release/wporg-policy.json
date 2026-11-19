@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "slug": "pre-orders-wc",
+  "svn_url": "https://plugins.svn.wordpress.org/pre-orders-wc",
+  "assets_mode": "unchanged",
+  "release_confirmation": {
+    "mode": "unknown",
+    "observed_at": null,
+    "source": "Pre-Orders Release Management has not been verified by a WordPress.org committer."
+  }
+}

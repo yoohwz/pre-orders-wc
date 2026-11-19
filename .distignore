@@ -7,4 +7,5 @@ tests
 AGENTS.md
 docs
 bin
+release
 *.zip

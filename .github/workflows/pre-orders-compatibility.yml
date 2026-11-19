@@ -59,6 +59,12 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Ensure Subversion fixture tooling
+        run: |
+          if ! command -v svn >/dev/null || ! command -v svnadmin >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install --yes subversion
+          fi
       - name: Test CI routing, gates and repository contracts
         run: python3 -m unittest discover -s tests/ci -p 'test_*.py' -v
       - name: Diff hygiene
@@ -184,16 +190,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - name: Stage distributable files
+      - name: Stage the release payload
+        env:
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          destination="$RUNNER_TEMP/package/pre-orders-wc"
-          mkdir -p "$destination"
-          rsync -a --exclude-from=.distignore ./ "$destination/"
-          test -f "$destination/pre-orders-wc.php"
+          metadata="$(python3 bin/validate-release.py metadata --source .)"
+          version="$(jq --exit-status --raw-output .version <<< "$metadata")"
+          bash bin/build-release.sh --source . --output-dir "$RUNNER_TEMP/package" \
+            --version "$version" --source-sha "$CANDIDATE_SHA" --preparation-run-id "$GITHUB_RUN_ID"
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
         with:
-          build-dir: ${{ runner.temp }}/package/pre-orders-wc
+          build-dir: ${{ runner.temp }}/package/staged/pre-orders-wc
           slug: pre-orders-wc
           repo-token: ''
           ignore-codes: outdated_tested_upto_header

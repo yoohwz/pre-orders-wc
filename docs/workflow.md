@@ -61,10 +61,8 @@ The weekly nightly WordPress canary is independent of the supported matrix and
 merge gate. Final CI also exercises the canary when its workflow or shared
 WordPress setup changes.
 
-PO has no Composer/PHPCS/PHPCompatibility stack, JS behavior suite or automated
-WordPress.org publisher in this adoption. Syntax and source checks are not claimed
-as those tools or as browser evidence. Hosted tests use public WordPress and
-WooCommerce packages and the Pre-Orders suite.
+Hosted tests use public WordPress and WooCommerce packages and run the Pre-Orders
+suite. PHP and JavaScript syntax checks cover syntax only.
 
 ## Handoff and release
 
@@ -79,5 +77,6 @@ Normal engineering continues inside Codex without Human relays or internal phase
 approvals. Prior decisions and findings remain applicable to the reviewed scope
 and candidate.
 
-Workflow adoption changes no runtime code, identity, version or release metadata.
-Merge does not authorize packaging, tags, publication, deployment or rollback.
+The [release runbook](releasing.md) defines read-only candidate preparation, dry-run
+publication preflight, protected WordPress.org publication and verification-only
+recovery. Merge and publication require separate Human authorization.
