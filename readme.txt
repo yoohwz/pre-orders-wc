@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 WC tested up to: 10.9
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -168,6 +168,17 @@ Yes. Versioned migrations retain existing product dates, settings, and order dat
 The free plugin covers product-level preorders, order history, and customer communication. WooCommerce Stock Manager adds restock batches and receiving, inventory movements, suppliers, purchase orders, reorder suggestions, allocation, fulfillment readiness, reports, and multi-location stock. During a supported upgrade, Stock Manager preserves Free order data and can import gateway exclusions if Stock Manager has no saved exclusions. Review Stock Manager's completion policy after upgrading. Its default follows stock receipts, and its manual setting also applies to backorders.
 
 == Changelog ==
+
+= 1.4.0 (November 19, 2026) =
+* New: Filter WooCommerce Orders by historical preorder status in HPOS and legacy storage, including mixed orders.
+* New: Compare checkout stock status and expected dates with current product information on the order screen.
+* New: Confirm availability manually for a product or variation, or use automatic completion on the expected date.
+* New: Exclude selected payment methods for preorder carts in Classic and Blocks checkout.
+* Fix: Enforce preorder quantity limits during cart updates and checkout.
+* Fix: Cancel stale availability schedules, save dates through the standard variation editor, and keep preorder-only variable products visible.
+* Fix: Keep checkout snapshots and draft tracking accurate as catalog and cart contents change.
+* Fix: Record the actual notification outcome and retry failed availability notifications.
+* Improve: Preserve delay-notification history across Free and Stock Manager upgrades.
 
 = 1.3.0 (July 18, 2026) =
 * New: Added a paginated Preorder overview with operational metrics, schedule filters, product search, open-order demand, and customer-update counts.
